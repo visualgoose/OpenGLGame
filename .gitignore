@@ -98,6 +98,12 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# External binaries
+*.lib
+*.dll
+*.so
+*.a
+
 # Chutzpah Test files
 _Chutzpah*
 

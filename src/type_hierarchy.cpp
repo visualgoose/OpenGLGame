@@ -50,7 +50,7 @@ namespace OGLGAME
     }
     void TypeHierarchy::AddChild(const char* pChildName)
     {
-        m_hierarchy.push_back(Client::GetInstance()
+        m_hierarchy.push_back(Client::S_GetInstance()
             .GetTypeCache()
             .FindOrCreateType(pChildName));
     }

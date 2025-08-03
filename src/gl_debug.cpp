@@ -10,23 +10,24 @@ namespace OGLGAME
         GLsizei length, const GLchar* pMessage,
         const void* pUserParam)
     {
-        // ignore non-significant error/warning codes
-        if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
+        //ignore non-significant error/warning codes
+        if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+            return;
 
         const char* pTypeName;
-        Logger::LogType logType = Logger::LOG_TYPE_INFO;
+        Logger::LogType logType = Logger::LogType_info;
         switch (type)
         {
-        case GL_DEBUG_TYPE_ERROR:               pTypeName = "Type: Error";                logType = Logger::LOG_TYPE_ERROR; break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: pTypeName = "Type: Deprecated Behaviour"; logType = Logger::LOG_TYPE_WARNING; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  pTypeName = "Type: Undefined Behaviour";  logType = Logger::LOG_TYPE_ERROR; break;
-        case GL_DEBUG_TYPE_PORTABILITY:         pTypeName = "Type: Portability";          logType = Logger::LOG_TYPE_WARNING; break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         pTypeName = "Type: Performance";          logType = Logger::LOG_TYPE_WARNING; break;
-        case GL_DEBUG_TYPE_MARKER:              pTypeName = "Type: Marker";               logType = Logger::LOG_TYPE_INFO; break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          pTypeName = "Type: Push Group";           logType = Logger::LOG_TYPE_INFO; break;
-        case GL_DEBUG_TYPE_POP_GROUP:           pTypeName = "Type: Pop Group";            logType = Logger::LOG_TYPE_INFO; break;
-        case GL_DEBUG_TYPE_OTHER:               pTypeName = "Type: Other";                logType = Logger::LOG_TYPE_INFO; break;
-        default:                                pTypeName = "Type: Unknown";              logType = Logger::LOG_TYPE_INFO; break;
+        case GL_DEBUG_TYPE_ERROR:               pTypeName = "Type: Error";                logType = Logger::LogType_error; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: pTypeName = "Type: Deprecated Behaviour"; logType = Logger::LogType_warning; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  pTypeName = "Type: Undefined Behaviour";  logType = Logger::LogType_error; break;
+        case GL_DEBUG_TYPE_PORTABILITY:         pTypeName = "Type: Portability";          logType = Logger::LogType_warning; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         pTypeName = "Type: Performance";          logType = Logger::LogType_warning; break;
+        case GL_DEBUG_TYPE_MARKER:              pTypeName = "Type: Marker";               logType = Logger::LogType_info; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          pTypeName = "Type: Push Group";           logType = Logger::LogType_info; break;
+        case GL_DEBUG_TYPE_POP_GROUP:           pTypeName = "Type: Pop Group";            logType = Logger::LogType_info; break;
+        case GL_DEBUG_TYPE_OTHER:               pTypeName = "Type: Other";                logType = Logger::LogType_info; break;
+        default:                                pTypeName = "Type: Unknown";              logType = Logger::LogType_info; break;
         }
         LogContinue& logContinue = g_log.PrintType(logType, "---OpenGL Debug Message---")
             .NextLine("{}", pTypeName);

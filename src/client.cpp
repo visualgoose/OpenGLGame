@@ -3,6 +3,7 @@
 #include "vgassert.h"
 
 #include "entity/interface/renderable.h"
+#include "entity/render_test.h"
 
 namespace OGLGAME
 {
@@ -12,31 +13,21 @@ namespace OGLGAME
         vgassert(s_pInstance == nullptr && "There can't be a second instance of OGLGAME::Client");
         s_pInstance = this;
 
+        CacheInterfaces();
         CacheTypes();
+
+        m_resourceSystem.LoadShadersAndMaterials();
 
         m_pPlayer = m_scene.SpawnEntity(new Entities::Player());
     }
 
-    Client& Client::GetInstance()
-    {
-        return *s_pInstance;
-    }
-
-    TypeCache& Client::GetTypeCache()
-    {
-        return m_typeCache;
-    }
-    Scene& Client::GetScene()
-    {
-        return m_scene;
-    }
-
     void Client::CacheInterfaces()
     {
-        Entities::IRenderable::CacheInterface();
+        Entities::IRenderable::S_CacheType();
     }
     void Client::CacheTypes()
     {
-        Entities::Player::CacheType();
+        Entities::Player::S_CacheType();
+        Entities::RenderTest::S_CacheType();
     }
 }

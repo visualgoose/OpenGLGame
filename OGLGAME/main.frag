@@ -1,13 +1,12 @@
 #version 460 core
 
-layout (location = 0) out vec4 fOutCol;
+layout (location = 0) out vec4 fo_color;
 
-uniform sampler2D tex;
+layout (location = 0) in vec2 fi_texCoord;
 
-uniform vec2 viewportSize;
+uniform sampler2D mainTex;
 
 void main()
 {
-    vec2 uvCoord = gl_FragCoord.xy / viewportSize;
-    fOutCol = texture(tex, uvCoord);
+    fo_color = texture(mainTex, fi_texCoord);
 }

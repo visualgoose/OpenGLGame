@@ -8,8 +8,8 @@ namespace OGLGAME::Entities
     {
     private:
         static TypeHierarchy s_typeHierarchy;
-    public:
-        static void CacheType();
+    private:
+        static void S_CacheType();
     public:
         static const TypeHierarchy& S_GetTypeHierarchy() noexcept { return s_typeHierarchy; }
     public:
@@ -17,5 +17,6 @@ namespace OGLGAME::Entities
     private:
         void Tick(double deltaTime) override;
         void Frame(double deltaTime) override;
+        friend class Client;
     };
 }

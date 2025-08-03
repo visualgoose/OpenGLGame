@@ -22,7 +22,7 @@ namespace OGLGAME
     public:
         template<class T> requires std::is_base_of<IEntity, T>::value
         T* SpawnEntity(T* pEntity) {
-            return reinterpret_cast<T*>(SpawnEntityInternal(pEntity));
+            return reinterpret_cast<T*>(SpawnEntityInternal(reinterpret_cast<IEntity*>(pEntity)));
         }
         void RemoveEntity(IEntity* pEntity);
         void RemoveEntity(size_t id);

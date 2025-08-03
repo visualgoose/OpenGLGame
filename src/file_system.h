@@ -3,15 +3,37 @@
 #include <filesystem>
 
 #include <vector>
-#include "exception/file_open_ex.h"
+#include <string>
+
+#include <expected>
 
 namespace OGLGAME::FS
 {
-    //Open and read binary file, throws OGLGAME::Exceptions::FileOpenException if file can't be opened
-    std::vector<uint8_t> ReadBinFile(const std::filesystem::path& filePath);
+    enum FileOpenErrorCode
+    {
+        FileOpenErrorCode_unknown,
+        FileOpenErrorCode_notFound,
+        FileOpenErrorCode_permissionDenied,
+        FileOpenErrorCode_notAFile,
+        FileOpenErrorCode_readFailure
+    };
+    struct FileOpenError
+    {
+    public:
+        FileOpenErrorCode m_errorCode = FileOpenErrorCode_unknown;
+    public:
+        FileOpenError() noexcept = default;
+        FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
+    public:
+        operator FileOpenErrorCode() const noexcept { return m_errorCode; }
+        operator const char* () const noexcept { return GetName(); }
+    public:
+        const char* GetName() const noexcept;
+    };
 
-    //Open and read text file, throws OGLGAME::Exceptions::FileOpenException if file can't be opened
-    std::string ReadTxtFile(const std::filesystem::path& filePath);
+    std::expected<std::vector<uint8_t>, FileOpenError> ReadBinFile(const std::filesystem::path& filePath);
+
+    std::expected<std::string, FileOpenError> ReadTxtFile(const std::filesystem::path& filePath);
 
     std::filesystem::path GetExePath();
 }

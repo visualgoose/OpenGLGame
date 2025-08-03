@@ -26,9 +26,13 @@ namespace fs = std::filesystem;
 #include "client.h"
 #include "scene.h"
 
+#include "entity/render_test.h"
+
 #include "gl_debug.h"
 
 using namespace OGLGAME;
+
+#include "resource/shader.h"
 
 int main(int argCount, char** ppArgs)
 {
@@ -84,6 +88,8 @@ int main(int argCount, char** ppArgs)
 #endif
     {
         Client client = Client(); //creates Client singleton
+        Scene& scene = client.GetScene();
+        scene.SpawnEntity(new Entities::RenderTest());
 
         SDL_Event event;
         bool shouldNotClose = true;
@@ -106,7 +112,7 @@ int main(int argCount, char** ppArgs)
                 }
             }
             glClear(GL_COLOR_BUFFER_BIT);
-            client.GetScene().Frame(deltaTime);
+            scene.Frame(deltaTime);
             SDL_GL_SwapWindow(pWindow);
             end = SDL_GetTicksNS();
             deltaTime = (double)(end - start) / 1000000000.0;

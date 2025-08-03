@@ -7,7 +7,7 @@ namespace OGLGAME
         m_types.reserve(16);
     }
 
-    TypeCache::CachedType TypeCache::FindType(const char* pTypeName)
+    TypeCache::CachedType TypeCache::FindType(const char* pTypeName) const noexcept
     {
         for (CachedType i = 0; i < m_types.size(); i++)
         {

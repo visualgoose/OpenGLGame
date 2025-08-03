@@ -1,0 +1,17 @@
+{
+    "properties": [
+        {
+            "type": "tex2D",
+            "id": "mainTex",
+            "displayName": "Main Texture"
+        }
+    ],
+    "features": [ "oglgame_MVP" ],
+    "vertex": {
+        "path": "D:\\vs\\cpp\\OpenGLGame\\OGLGAME\\main.vert",
+        "vertexLayout": [ "position", "texCoord" ]
+    },
+    "fragment": {
+        "path": "main.frag"
+    }
+}

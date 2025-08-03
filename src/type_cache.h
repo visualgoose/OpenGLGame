@@ -18,7 +18,7 @@ namespace OGLGAME
         TypeCache(const TypeCache&) = delete;
         TypeCache& operator=(const TypeCache&) = delete;
     public:
-        CachedType FindType(const char* pTypeName);
+        CachedType FindType(const char* pTypeName) const noexcept;
         CachedType FindOrCreateType(const char* pTypeName);
     };
 }

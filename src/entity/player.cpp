@@ -5,7 +5,8 @@
 namespace OGLGAME::Entities
 {
     TypeHierarchy Player::s_typeHierarchy = TypeHierarchy();
-    void Player::CacheType()
+
+    void Player::S_CacheType()
     {
         s_typeHierarchy.AddChild("player");
     }

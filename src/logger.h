@@ -62,10 +62,10 @@ namespace OGLGAME
     public:
         enum LogType : uint8_t
         {
-            LOG_TYPE_INFO,
-            LOG_TYPE_WARNING,
-            LOG_TYPE_ERROR,
-            LOG_TYPE_FATAL
+            LogType_info,
+            LogType_warning,
+            LogType_error,
+            LogType_fatal
         };
     public:
         std::string LF2Indent(const std::string& string);
@@ -88,11 +88,11 @@ namespace OGLGAME
         {
             switch (type)
             {
-            case LOG_TYPE_WARNING:
+            case LogType_warning:
                 return Print(ANSI_COLOR_BRIGHT_YELLOW, "Warning", fmt, std::forward<T>(args)...);
-            case LOG_TYPE_ERROR:
+            case LogType_error:
                 return Print(ANSI_COLOR_BRIGHT_RED, "Error", fmt, std::forward<T>(args)...);
-            case LOG_TYPE_FATAL:
+            case LogType_fatal:
                 return Print(ANSI_COLOR_BRIGHT_YELLOW, "Warning", fmt, std::forward<T>(args)...);
             default:
                 return Print(ANSI_COLOR_RESET, "Info", fmt, std::forward<T>(args)...);

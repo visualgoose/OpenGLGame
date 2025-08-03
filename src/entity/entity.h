@@ -18,6 +18,9 @@ namespace OGLGAME
         glm::vec3 m_scale = { 1.0f, 1.0f, 1.0f };
         glm::quat m_rotation = { 0.0f, 0.0f, 0.0f, 0.0f };
     public:
+        IEntity() = default;
+        IEntity(IEntity& other) = delete;
+        IEntity& operator=(IEntity&) = delete;
         virtual ~IEntity() noexcept {}
     public:
         size_t GetID() const noexcept { return m_id; }
@@ -26,5 +29,6 @@ namespace OGLGAME
         virtual void Tick(double deltaTime) {}
         virtual void Frame(double deltaTime) {}
     friend class Scene;
+    friend class Client;
     };
 }

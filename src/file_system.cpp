@@ -15,34 +15,64 @@ namespace fs = std::filesystem;
 
 namespace OGLGAME::FS
 {
-    std::vector<uint8_t> ReadBinFile(const fs::path& filePath)
+    const char* FileOpenError::GetName() const noexcept
     {
-        std::ifstream file(filePath, std::ios::binary | std::ios::ate);
-        if (!file.is_open())
-            throw Exceptions::FileOpenException(filePath);
-
-        size_t fileSize = file.tellg(); //tellg returns file size, because std::ios::ate was used in std::ifstream
-        std::vector<uint8_t> fileBuff(fileSize);
-
-        file.seekg(0); //set pointer to 0, so file reads properly
-        file.read(reinterpret_cast<char*>(fileBuff.data()), fileSize);
-
-        file.close();
-        return fileBuff;
+        switch (m_errorCode)
+        {
+        case FileOpenErrorCode_notFound:
+            return "FileOpenErrorCode_notFound";
+        case FileOpenErrorCode_permissionDenied:
+            return "FileOpenErrorCode_permissionDenied";
+        case FileOpenErrorCode_notAFile:
+            return "FileOpenErrorCode_notAFile";
+        case FileOpenErrorCode_readFailure:
+            return "FileOpenErrorCode_notAFile";
+        default:
+            return "FileOpenErrorCode_unknown";
+        }
     }
 
-    std::string ReadTxtFile(const fs::path& filePath)
+    std::expected<std::vector<uint8_t>, FileOpenError> ReadBinFile(const std::filesystem::path& filePath)
     {
+        if (!std::filesystem::exists(filePath))
+            return std::unexpected(FileOpenErrorCode_notFound);
+
+        if (!std::filesystem::is_regular_file(filePath))
+            return std::unexpected(FileOpenErrorCode_notAFile);
+
+        std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+        if (!file.is_open())
+            return std::unexpected(FileOpenErrorCode_permissionDenied);
+
+        size_t fileSize = file.tellg(); //tellg returns file size, because std::ios::ate was used in std::ifstream
+        std::vector<uint8_t> fileData(fileSize);
+
+        file.seekg(0); //set pointer to 0, so file reads properly
+        if (!file.read(reinterpret_cast<char*>(fileData.data()), fileSize))
+            return std::unexpected(FileOpenErrorCode_readFailure);
+
+        file.close();
+        return fileData;
+    }
+
+    std::expected<std::string, FileOpenError> ReadTxtFile(const std::filesystem::path& filePath)
+    {
+        if (!std::filesystem::exists(filePath))
+            return std::unexpected(FileOpenErrorCode_notFound);
+
+        if (!std::filesystem::is_regular_file(filePath))
+            return std::unexpected(FileOpenErrorCode_notAFile);
+
         std::ifstream file(filePath);
         if (!file.is_open())
-            throw Exceptions::FileOpenException(filePath);
+            return std::unexpected(FileOpenErrorCode_permissionDenied);
 
-        std::string fileBuff(
+        std::string fileData = std::string(
             (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()
         );
 
         file.close();
-        return fileBuff;
+        return fileData;
     }
 
     fs::path GetExePath()

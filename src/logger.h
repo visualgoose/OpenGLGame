@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <utility>
 #include <fmt/base.h>
 #include <fmt/args.h>
 
@@ -30,10 +31,11 @@ namespace OGLGAME
 {
     class LogContinue
     {
-    private:
+    private: //member variables
         std::string m_indent;
         char m_color[6] = { '\0' };
-    private:
+
+    private: //member functions
         LogContinue();
     private:
         void ChangeIndentSize(size_t indentSize);
@@ -50,16 +52,7 @@ namespace OGLGAME
 
     class Logger
     {
-    private:
-        LogContinue m_logContinue;
-        std::string m_modid;
-        std::string indent;
-    public:
-        Logger(const std::string& modid) : m_modid(modid), m_logContinue() { }
-
-        Logger(const Logger&) = delete;
-        Logger& operator=(Logger&) = delete;
-    public:
+    public: //data types
         enum LogType : uint8_t
         {
             LogType_info,
@@ -67,8 +60,21 @@ namespace OGLGAME
             LogType_error,
             LogType_fatal
         };
-    public:
-        std::string LF2Indent(const std::string& string);
+
+    private: //member variables
+        LogContinue m_logContinue;
+        std::string m_modid;
+        std::string indent;
+
+    public: //constructors
+        explicit Logger(std::string modid) : m_modid(std::move(modid)) { }
+        Logger(const Logger&) = delete;
+
+    public: //operators
+        Logger& operator=(Logger&) = delete;
+    
+    public: //member functions
+        [[nodiscard]] std::string LF2Indent(const std::string& string) const;
     private:
         template<typename... T>
         LogContinue& Print(const char* color, const char* prefix, const fmt::v11::format_string<T...>& fmt, T&&... args)

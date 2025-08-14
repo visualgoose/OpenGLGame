@@ -19,8 +19,7 @@ namespace OGLGAME
         memcpy(m_color, color, sizeof(m_color) - 1);
     }
 
-    std::string Logger::LF2Indent(const std::string& string)
-    {
+    std::string Logger::LF2Indent(const std::string& string) const {
         std::stringstream ss(string);
 
         size_t stringsSize = 0;
@@ -60,8 +59,7 @@ namespace OGLGAME
             {
                 break;
             }
-            else
-                out.append("\n").append(m_logContinue.m_indent);
+            out.append("\n").append(m_logContinue.m_indent);
         }
         return out;
     }

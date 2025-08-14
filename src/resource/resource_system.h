@@ -15,9 +15,9 @@ namespace OGLGAME
 {
     class ResourceSystem
     {
-    public:
+    public: //data types
         using ResourceIndex = size_t;
-        enum ResourceType
+        enum ResourceType : uint8_t
         {
             ResourceType_invalid,
             ResourceType_model,
@@ -27,35 +27,45 @@ namespace OGLGAME
         };
         struct ResourceID
         {
+        public: //member variables
             ResourceIndex m_resourceIndex = -1;
             ResourceType m_resourceType = ResourceType_invalid;
 
+        public: //member functions
+            bool IsValid()
+            {
+                return m_resourceIndex != sc_invalidResourceIndex &&
+                    m_resourceType != ResourceType_invalid;
+            }
+
+        public: //operators
             operator ResourceIndex() { return m_resourceIndex; }
         };
-    public:
+
+    public: //constants
         static constexpr ResourceIndex sc_invalidResourceIndex = -1;
-    private:
-        std::unordered_map<std::string, ResourceID> m_string2ResourceID;
+
+    private: //member variabales
+        std::unordered_map<std::filesystem::path, ResourceID> m_path2ResourceID;
         std::vector<Model> m_models;
         std::vector<Texture> m_textures;
         std::vector<Material> m_materials;
         std::vector<Shader> m_shaders;
-    public:
+
+    private: //constructors and setup functions
+        //is private, because only the Client class should be able to initialize the resource system
         ResourceSystem();
-    private:
         void LoadShadersAndMaterials();
-    public:
+
+    public: //operators
         ResourceSystem(ResourceSystem&) = delete;
         ResourceSystem& operator=(ResourceSystem&) = delete;
-    public:
-        bool AddRefModel(const ResourceIndex model) noexcept;
-        const ResourceIndex AddRefModel(const std::string& modelPath);
-        void ReleaseModel(const ResourceIndex model) noexcept;
-        void ReleaseModel(const std::string& modelPath) noexcept;
-        const ResourceIndex GetModel(const std::string& modelPath) const noexcept;
-        const Model& GetModelInfo(const ResourceIndex model) const noexcept;
-    private:
-        Model& GetModelInfoNC(const ResourceIndex model) noexcept;
-        friend class Client;
+
+    public: //member functions
+        ResourceID GetResourceID(const std::filesystem::path& filePath) const noexcept;
+
+        const Shader& GetShader(ResourceIndex shaderIndex) const noexcept;
+
+    friend class Client;
     };
 }

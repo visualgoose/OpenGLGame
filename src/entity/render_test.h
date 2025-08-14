@@ -5,19 +5,20 @@
 
 namespace OGLGAME::Entities
 {
-    class RenderTest : IEntity, IRenderable
+    class RenderTest : Entity, Renderable
     {
-    private:
+    private: //static variables
         static TypeHierarchy s_typeHierarchy;
-    private:
+
+    public: //static functions
         static void S_CacheType();
-    public:
         static const TypeHierarchy& S_GetTypeHierarchy() noexcept { return s_typeHierarchy; }
-    public:
+
+    public: //constructors
         RenderTest();
         ~RenderTest() override = default;
-    public:
+
+    public: //member functions
         const TypeHierarchy& GetTypeHierarchy() const noexcept override { return s_typeHierarchy; }
-        friend class Client;
     };
 }

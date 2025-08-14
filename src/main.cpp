@@ -7,21 +7,10 @@
 
 #include <glad/glad.h>
 
-#include <thread>
-
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include <glm/vec3.hpp>
-#include <glm/ext/quaternion_float.hpp>
-#include <glm/ext/matrix_float4x4.hpp>
-
 #include "logging.h"
-#include "vgassert.h"
 #include "file_system.h"
 #include "client.h"
 #include "scene.h"
@@ -31,8 +20,6 @@ namespace fs = std::filesystem;
 #include "gl_debug.h"
 
 using namespace OGLGAME;
-
-#include "resource/shader.h"
 
 int main(int argCount, char** ppArgs)
 {
@@ -64,7 +51,9 @@ int main(int argCount, char** ppArgs)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #ifdef OGLGAME_SHOWDBGINFO
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+    int flags = 0;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &flags);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags | SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
     SDL_Window* pWindow = SDL_CreateWindow("OpenGLGame window", 900, 900, SDL_WINDOW_OPENGL);
     if (!pWindow)
@@ -83,7 +72,7 @@ int main(int argCount, char** ppArgs)
 #ifdef OGLGAME_SHOWDBGINFO
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(OGLGAME::glDebugCallback, nullptr);
+    glDebugMessageCallback(glDebugCallback, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #endif
     {
@@ -93,9 +82,8 @@ int main(int argCount, char** ppArgs)
 
         SDL_Event event;
         bool shouldNotClose = true;
-        uint64_t timeSinceLastTick = -1;
         uint64_t start;
-        uint64_t end = SDL_GetTicksNS();
+        uint64_t end;
         double deltaTime = 1.0;
         while (shouldNotClose)
         {
@@ -116,15 +104,17 @@ int main(int argCount, char** ppArgs)
             SDL_GL_SwapWindow(pWindow);
             end = SDL_GetTicksNS();
             deltaTime = (double)(end - start) / 1000000000.0;
-            /*
+
             if ((end - start) < (1000000000 / 128))
             {
                 uint64_t delay = 1000000000 / 128 - (end - start);
                 SDL_DelayPrecise(delay);
             }
-            */
         }
     }
+
+    Entity* ent = nullptr;
+    ent->IsType<Entities::RenderTest>();
 
     SDL_GL_DestroyContext(openGLContext);
     SDL_DestroyWindow(pWindow);

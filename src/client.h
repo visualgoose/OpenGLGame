@@ -11,21 +11,27 @@ namespace OGLGAME
 {
     class Client
     {
-    private:
+    private: //static variables
         static Client* s_pInstance;
-    public:
+
+    public: //static functions
         static Client& S_GetInstance() { return *s_pInstance; }
-    private:
+
+    private: //member variables
         TypeCache m_typeCache;
         Scene m_scene;
         ResourceSystem m_resourceSystem;
         Entities::Player* m_pPlayer = nullptr;
-    private:
+
+    private: //constructors
         Client();
     public:
         Client(Client&) = delete;
+
+    public: //operators
         Client& operator=(Client&) = delete;
-    public:
+
+    public: //member functions
         TypeCache& GetTypeCache() { return m_typeCache; }
         Scene& GetScene() { return m_scene; }
         ResourceSystem& GetResourceSystem() { return m_resourceSystem; }
@@ -34,6 +40,6 @@ namespace OGLGAME
     private:
         void CacheInterfaces();
         void CacheTypes();
-    friend int ::main(int argCount, char** ppArgs); //only the main function can initialize the Class singelton
+    friend int ::main(int argCount, char** ppArgs); //only the main function can initialize the Class singleton
     };
 }

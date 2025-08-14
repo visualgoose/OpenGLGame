@@ -6,7 +6,7 @@ namespace OGLGAME::Entities
 
     void RenderTest::S_CacheType()
     {
-        s_typeHierarchy.AddInterface(IRenderable::S_GetType());
+        s_typeHierarchy.AddInterface(Renderable::S_GetType());
     }
 
     RenderTest::RenderTest()

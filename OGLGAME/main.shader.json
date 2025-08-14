@@ -8,7 +8,7 @@
     ],
     "features": [ "oglgame_MVP" ],
     "vertex": {
-        "path": "D:\\vs\\cpp\\OpenGLGame\\OGLGAME\\main.vert",
+        "path": "main.vert",
         "vertexLayout": [ "position", "texCoord" ]
     },
     "fragment": {

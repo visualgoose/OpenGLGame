@@ -96,7 +96,7 @@ namespace OGLGAME
 
         if (!CreateShaders(shaderJSON))
             return;
-        if (!CreateProgram(shaderJSON))
+        if (!CreateProgram())
             return;
         if (!LoadProperties(shaderJSON))
             return;
@@ -107,39 +107,39 @@ namespace OGLGAME
     }
     bool Shader::CreateShaders(const json& shaderJSON)
     {
-        json shaderJSONVertex = shaderJSON["vertex"];
+        const json& shaderJSONVertex = shaderJSON["vertex"];
         if (!shaderJSONVertex.is_object())
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                 .NextLine("\"vertex\" isn't a json object");
             return false;
         }
-        json shaderJSONVertexPath = shaderJSONVertex["path"];
+
+        const json& shaderJSONVertexPath = shaderJSONVertex["path"];
         if (!shaderJSONVertexPath.is_string())
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                 .NextLine("\"path\" in \"vertex\" isn't a string");
             return false;
         }
-        std::string shaderSourcePath;
-        shaderJSONVertexPath.get_to(shaderSourcePath);
-        std::filesystem::path relativePath = m_path.parent_path() / shaderSourcePath;
-        std::expected<std::string, FS::FileOpenError> shaderSource = FS::ReadTxtFile(relativePath)
-            .or_else([&](FS::FileOpenError relativeError)
-                {
-                    shaderSource = FS::ReadTxtFile(std::filesystem::path(shaderSourcePath));
-                    if (!shaderSource)
-                    {
-                        g_log.Error("Failed to open vertex shader source from shader file \"{}\":", m_path.string())
-                            .NextLine("Relative path: {}", relativePath.string())
-                            .NextLine("Relative error: {}", relativeError.GetName())
-                            .NextLine("Not relative path: {}", shaderSourcePath)
-                            .NextLine("Not realtive error: {}", shaderSource.error().GetName());
-                    }
-                    return shaderSource;
-                });
-        if (!shaderSource)
+        std::string shaderSrcPathStr;
+        shaderJSONVertexPath.get_to(shaderSrcPathStr);
+
+        std::filesystem::path shaderSrcPath = m_path.parent_path() / shaderSrcPathStr;
+        shaderSrcPathStr = shaderSrcPath.string();
+        if (!FS::MakePathRelativeToGamePath(shaderSrcPath))
+        {
+            g_log.Error("Failed to load shader file \"{}\":", m_path.string())
+                .NextLine("vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
             return false;
+        }
+        std::expected<std::string, FS::FileOpenError> shaderSource = FS::ReadTxtFile(shaderSrcPath);
+        if (!shaderSource)
+        {
+            g_log.Error("Failed to load shader file \"{}\":", m_path.string())
+                .NextLine("failed to read vertex shader source with error {}", shaderSource.error().GetName());
+            return false;
+        }
         const GLchar* pShaderSource = (*shaderSource).c_str();
         GLint shaderSourceLen = static_cast<GLint>((*shaderSource).size());
 
@@ -161,7 +161,7 @@ namespace OGLGAME
             return false;
         }
 
-        json shaderJSONVertexLayout = shaderJSONVertex["vertexLayout"];
+        const json& shaderJSONVertexLayout = shaderJSONVertex["vertexLayout"];
         if (shaderJSONVertexLayout.size() > VertexLayout::VertexAttributeBits_Count)
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
@@ -174,38 +174,37 @@ namespace OGLGAME
         shaderJSONVertexLayout.get_to(pVertexAttributes);
         m_vertexLayout = VertexLayout(pVertexAttributes);
 
-        json shaderJSONFragment = shaderJSON["fragment"];
+        const json& shaderJSONFragment = shaderJSON["fragment"];
         if (!shaderJSONFragment.is_object())
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                 .NextLine("\"fragment\" isn't a json object");
             return false;
         }
-        json shaderJSONFragmentPath = shaderJSONFragment["path"];
+        const json& shaderJSONFragmentPath = shaderJSONFragment["path"];
         if (!shaderJSONFragmentPath.is_string())
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                 .NextLine("\"path\" in \"fragment\" isn't a string");
             return false;
         }
-        shaderJSONFragmentPath.get_to(shaderSourcePath);
-        relativePath = m_path.parent_path() / shaderSourcePath;
-        shaderSource = FS::ReadTxtFile(relativePath)
-            .or_else([&](FS::FileOpenError relativeError)
-                {
-                    shaderSource = FS::ReadTxtFile(std::filesystem::path(shaderSourcePath));
-                    if (!shaderSource)
-                    {
-                        g_log.Error("Failed to open fragment shader source from shader file \"{}\":", m_path.string())
-                            .NextLine("Relative path: {}", relativePath.string())
-                            .NextLine("Relative error: {}", relativeError.GetName())
-                            .NextLine("Not relative path: {}", shaderSourcePath)
-                            .NextLine("Not realtive error: {}", shaderSource.error().GetName());
-                    }
-                    return shaderSource;
-                });
-        if (!shaderSource)
+        shaderJSONFragmentPath.get_to(shaderSrcPathStr);
+
+        shaderSrcPath = m_path.parent_path() / shaderSrcPathStr;
+        shaderSrcPathStr = shaderSrcPath.string();
+        if (!FS::MakePathRelativeToGamePath(shaderSrcPath))
+        {
+            g_log.Error("Failed to load shader file \"{}\":", m_path.string())
+                .NextLine("vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
             return false;
+        }
+        shaderSource = FS::ReadTxtFile(shaderSrcPath);
+        if (!shaderSource)
+        {
+            g_log.Error("Failed to load shader file \"{}\":", m_path.string())
+                .NextLine("failed to read vertex shader source with error {}", shaderSource.error().GetName());
+            return false;
+        }
         pShaderSource = (*shaderSource).c_str();
         shaderSourceLen = static_cast<GLint>((*shaderSource).size());
 
@@ -224,7 +223,7 @@ namespace OGLGAME
         }
         return true;
     }
-    bool Shader::CreateProgram(const json& shaderJSON)
+    bool Shader::CreateProgram()
     {
         GLint success;
         GLint infoLogLen;
@@ -248,7 +247,7 @@ namespace OGLGAME
     }
     bool Shader::LoadProperties(const nlohmann::json& shaderJSON)
     {
-        json shaderJSONProperties = shaderJSON["properties"];
+        const json& shaderJSONProperties = shaderJSON["properties"];
         if (!shaderJSONProperties.is_null() && !shaderJSONProperties.is_array())
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
@@ -258,7 +257,7 @@ namespace OGLGAME
         for (const auto& shaderJSONPropertyIt : shaderJSONProperties.items())
         {
             const std::string& shaderJSONPropertyKey = shaderJSONPropertyIt.key();
-            json shaderJSONProperty = shaderJSONPropertyIt.value();
+            const json& shaderJSONProperty = shaderJSONPropertyIt.value();
 
             PropertyType propertyType;
             shaderJSONProperty["type"].get_to(propertyType);
@@ -266,15 +265,15 @@ namespace OGLGAME
             {
                 g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                     .NextLine("\"type\" at key \"{}\" in \"properties\" is invalid or null", shaderJSONPropertyKey);
-                return;
+                return false;
             }
 
-            json shaderJSONPropertyID = shaderJSONProperty["id"];
+            const json& shaderJSONPropertyID = shaderJSONProperty["id"];
             if (!shaderJSONPropertyID.is_string())
             {
                 g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                     .NextLine("\"id\" at key \"{}\" in \"properties\" isn't a string", shaderJSONPropertyKey);
-                return;
+                return false;
             }
             std::string propertyID;
             shaderJSONPropertyID.get_to(propertyID);
@@ -284,30 +283,31 @@ namespace OGLGAME
             {
                 g_log.Error("Failed to get uniform location of id \"{}\" at key \"{}\" in \"properties\"",
                     propertyID, shaderJSONPropertyKey);
-                return;
+                return false;
             }
 
-            json shaderJSONPropertyDisplayName = shaderJSONProperty["displayName"];
+            const json& shaderJSONPropertyDisplayName = shaderJSONProperty["displayName"];
             if (!shaderJSONPropertyDisplayName.is_string())
             {
                 g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                     .NextLine("\"displayName\" at key \"{}\" in \"properties\" isn't a string", shaderJSONPropertyKey);
-                return;
+                return false;
             }
             std::string displayName;
             shaderJSONPropertyDisplayName.get_to(displayName);
 
             m_properties.emplace_back(uniformLocation, propertyType, std::move(propertyID), std::move(displayName));
         }
+        return true;
     }
     bool Shader::LoadFeatures(const json& shaderJSON)
     {
-        json shaderJSONFeatures = shaderJSON["features"];
+        const json& shaderJSONFeatures = shaderJSON["features"];
         if (shaderJSONFeatures.is_null() || shaderJSONFeatures.size() > Feature_Count)
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                 .NextLine("\"features\" is either null or its size is bigger than the count of all possible features");
-            return;
+            return false;
         }
         shaderJSONFeatures.get_to(m_features);
         for (uint8_t i = 0; i < Feature_Count; i++)
@@ -316,14 +316,43 @@ namespace OGLGAME
             {
                 g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                     .NextLine("value at index \"{}\" in \"features\" isn't a valid feature", i);
-                return;
+                return false;
+            }
+            m_featureUniformLocations[i] = glGetUniformLocation(m_shaderProgram,
+                sc_featureUniformNames[m_features[i]]);
+            if (m_featureUniformLocations[i] == -1)
+            {
+                g_log.Error("Failed to get uniform location \"{}\" for feature",
+                    sc_featureUniformNames[m_features[i]]);
+                return false;
             }
         }
+        return true;
     }
     Shader::~Shader() noexcept
     {
         glDeleteProgram(m_shaderProgram);
         glDeleteShader(m_vertexShader);
         glDeleteShader(m_fragmentShader);
+    }
+
+    void Shader::GetFeatures(Feature* pOutFeatures, uint8_t outFeaturesSize) const noexcept
+    {
+        for (uint8_t i = 0; i < Feature_Count; i++)
+        {
+            if (i == outFeaturesSize)
+                break;
+            pOutFeatures[i] = m_features[i];
+        }
+    }
+    void Shader::GetFeatureUniformLocations(GLint* pOutLocations,
+        uint8_t outLocationsSize) const noexcept
+    {
+        for (uint8_t i = 0; i < Feature_Count; i++)
+        {
+            if (i == outLocationsSize)
+                break;
+            pOutLocations[i] = m_featureUniformLocations[i];
+        }
     }
 }

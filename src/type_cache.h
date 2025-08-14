@@ -7,17 +7,19 @@ namespace OGLGAME
 {
     class TypeCache
     {
-    public:
+    public: //data types
         using CachedType = size_t;
-    public:
+
+    public: //constants
         static constexpr CachedType sc_invalidType = -1;
-    private:
+
+    private: //member variables
         std::vector<std::string> m_types;
     public:
         TypeCache();
         TypeCache(const TypeCache&) = delete;
         TypeCache& operator=(const TypeCache&) = delete;
-    public:
+
         CachedType FindType(const char* pTypeName) const noexcept;
         CachedType FindOrCreateType(const char* pTypeName);
     };

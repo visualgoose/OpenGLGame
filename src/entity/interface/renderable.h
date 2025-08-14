@@ -2,26 +2,27 @@
 
 #include "type_cache.h"
 #include "resource/resource_system.h"
-#include "entity/entity.h"
 
 namespace OGLGAME::Entities
 {
-    class IRenderable
+    class Renderable
     {
-    private:
+    private: //static variables
         static TypeCache::CachedType s_type;
-    private:
+
+    public: //static functions
         static void S_CacheType();
-    public:
         static const TypeCache::CachedType S_GetType();
-    public:
-        IRenderable() = default;
-        ~IRenderable();
-    private:
+
+    public: //constructors
+        Renderable() = default;
+        ~Renderable();
+
+    private: //member variables
         ResourceSystem::ResourceIndex m_model = ResourceSystem::sc_invalidResourceIndex;
-    protected:
+
+    protected: //member functions
         void SetModel(ResourceSystem::ResourceIndex model);
         ResourceSystem::ResourceIndex SetModel(const std::string& pModelPath);
-        friend class Client;
     };
 }

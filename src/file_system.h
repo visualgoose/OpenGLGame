@@ -19,21 +19,30 @@ namespace OGLGAME::FS
     };
     struct FileOpenError
     {
-    public:
+    public: //member variables
         FileOpenErrorCode m_errorCode = FileOpenErrorCode_unknown;
-    public:
+
+    public: //constructors
         FileOpenError() noexcept = default;
         FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
-    public:
+
+    public: //operators
         operator FileOpenErrorCode() const noexcept { return m_errorCode; }
         operator const char* () const noexcept { return GetName(); }
-    public:
+
+    public: //member functions
         const char* GetName() const noexcept;
     };
 
     std::expected<std::vector<uint8_t>, FileOpenError> ReadBinFile(const std::filesystem::path& filePath);
-
     std::expected<std::string, FileOpenError> ReadTxtFile(const std::filesystem::path& filePath);
+
+    /*
+    * \param path the path that will be made relative
+    * 
+    * \returns is resulting path in the game directory
+    */
+    bool MakePathRelativeToGamePath(std::filesystem::path& path);
 
     std::filesystem::path GetExePath();
 }

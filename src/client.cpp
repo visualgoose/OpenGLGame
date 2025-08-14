@@ -23,7 +23,7 @@ namespace OGLGAME
 
     void Client::CacheInterfaces()
     {
-        Entities::IRenderable::S_CacheType();
+        Entities::Renderable::S_CacheType();
     }
     void Client::CacheTypes()
     {

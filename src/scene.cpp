@@ -7,7 +7,7 @@ namespace OGLGAME
     Scene::Scene(size_t baseEntityLimit) :
         m_entityLimit(baseEntityLimit)
     {
-        m_ppEntities = new IEntity*[baseEntityLimit];
+        m_ppEntities = new Entity*[baseEntityLimit];
         for (size_t i = 0; i < baseEntityLimit; i++)
             m_ppEntities[i] = nullptr;
     }
@@ -20,14 +20,14 @@ namespace OGLGAME
         delete[] m_ppEntities;
     }
 
-    IEntity* Scene::SpawnEntityInternal(IEntity* pEntity)
+    Entity* Scene::SpawnEntityInternal(Entity* pEntity)
     {
         size_t id = sc_invalidEntityID;
         if (m_entityCount == m_entityLimit)
         {
             size_t oldEntityLimit = m_entityLimit;
             m_entityLimit *= 2;
-            IEntity** ppNewEntities = new IEntity*[m_entityLimit];
+            Entity** ppNewEntities = new Entity*[m_entityLimit];
             for (size_t i = 0; i < oldEntityLimit; i++)
                 ppNewEntities[i] = m_ppEntities[i];
             delete[] m_ppEntities;
@@ -49,14 +49,14 @@ namespace OGLGAME
         m_entityCount++;
         return pEntity;
     }
-    void Scene::RemoveEntity(IEntity* pEntity)
+    void Scene::RemoveEntity(Entity* pEntity)
     {
         RemoveEntity(pEntity->m_id);
     }
     void Scene::RemoveEntity(size_t id)
     {
         vgassert(id < m_entityLimit);
-        IEntity* entity = m_ppEntities[id];
+        Entity* entity = m_ppEntities[id];
         vgassert(entity != nullptr);
         delete entity;
         m_ppEntities[id] = nullptr;
@@ -70,7 +70,7 @@ namespace OGLGAME
         {
             if (entitiesTicked == m_entityCount)
                 break;
-            IEntity* entity = m_ppEntities[i];
+            Entity* entity = m_ppEntities[i];
             if (entity != nullptr)
             {
                 entity->Tick(deltaTime);
@@ -85,7 +85,7 @@ namespace OGLGAME
         {
             if (entitiesFrameTicked == m_entityCount)
                 break;
-            IEntity* entity = m_ppEntities[i];
+            Entity* entity = m_ppEntities[i];
             if (entity != nullptr)
             {
                 entity->Frame(deltaTime);

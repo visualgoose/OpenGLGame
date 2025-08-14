@@ -26,7 +26,7 @@ namespace OGLGAME::FS
         case FileOpenErrorCode_notAFile:
             return "FileOpenErrorCode_notAFile";
         case FileOpenErrorCode_readFailure:
-            return "FileOpenErrorCode_notAFile";
+            return "FileOpenErrorCode_readFailure";
         default:
             return "FileOpenErrorCode_unknown";
         }
@@ -44,7 +44,7 @@ namespace OGLGAME::FS
         if (!file.is_open())
             return std::unexpected(FileOpenErrorCode_permissionDenied);
 
-        size_t fileSize = file.tellg(); //tellg returns file size, because std::ios::ate was used in std::ifstream
+        size_t fileSize = file.tellg();
         std::vector<uint8_t> fileData(fileSize);
 
         file.seekg(0); //set pointer to 0, so file reads properly
@@ -54,7 +54,6 @@ namespace OGLGAME::FS
         file.close();
         return fileData;
     }
-
     std::expected<std::string, FileOpenError> ReadTxtFile(const std::filesystem::path& filePath)
     {
         if (!std::filesystem::exists(filePath))
@@ -73,6 +72,20 @@ namespace OGLGAME::FS
 
         file.close();
         return fileData;
+    }
+
+    bool MakePathRelativeToGamePath(std::filesystem::path& path)
+    {
+        std::filesystem::path temp = path;
+        if(!temp.is_absolute())
+            temp = std::filesystem::absolute(temp);
+        std::string tempString = temp.string();
+        std::string currentPath = std::filesystem::current_path().string();
+        if (!tempString.starts_with(currentPath))
+            return false;
+
+        path = tempString.c_str() + currentPath.size() + 1;
+        return true;
     }
 
     fs::path GetExePath()

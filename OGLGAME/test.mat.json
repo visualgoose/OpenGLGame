@@ -1,5 +1,5 @@
 {
-    "shader": "main.shader.json",
+    "shaderPath": "main.shader.json",
     "properties": [
         { "mainTex": "tex.png" } 
     ]

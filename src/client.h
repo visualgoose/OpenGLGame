@@ -15,7 +15,7 @@ namespace OGLGAME
         static Client* s_pInstance;
 
     public: //static functions
-        static Client& S_GetInstance() { return *s_pInstance; }
+        static Client& S_GetInstance() noexcept { return *s_pInstance; }
 
     private: //member variables
         TypeCache m_typeCache;
@@ -32,11 +32,11 @@ namespace OGLGAME
         Client& operator=(Client&) = delete;
 
     public: //member functions
-        TypeCache& GetTypeCache() { return m_typeCache; }
-        Scene& GetScene() { return m_scene; }
-        ResourceSystem& GetResourceSystem() { return m_resourceSystem; }
+        TypeCache& GetTypeCache() noexcept { return m_typeCache; }
+        Scene& GetScene() noexcept { return m_scene; }
+        ResourceSystem& GetResourceSystem() noexcept { return m_resourceSystem; }
 
-        Entities::Player* GetPlayer() { return m_pPlayer; }
+        Entities::Player* GetPlayer() const noexcept { return m_pPlayer; }
     private:
         void CacheInterfaces();
         void CacheTypes();

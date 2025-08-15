@@ -113,9 +113,6 @@ int main(int argCount, char** ppArgs)
         }
     }
 
-    Entity* ent = nullptr;
-    ent->IsType<Entities::RenderTest>();
-
     SDL_GL_DestroyContext(openGLContext);
     SDL_DestroyWindow(pWindow);
     SDL_GL_UnloadLibrary();

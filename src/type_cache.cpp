@@ -14,12 +14,12 @@ namespace OGLGAME
             if (m_types[i] == pTypeName)
                 return i;
         }
-        return sc_invalidType;
+        return c_invalidType;
     }
     TypeCache::CachedType TypeCache::FindOrCreateType(const char* pTypeName)
     {
         CachedType type = FindType(pTypeName);
-        if (type != sc_invalidType)
+        if (type != c_invalidType)
             return type;
         m_types.emplace_back(pTypeName);
         return m_types.size() - 1;

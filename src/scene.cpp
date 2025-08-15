@@ -22,7 +22,7 @@ namespace OGLGAME
 
     Entity* Scene::SpawnEntityInternal(Entity* pEntity)
     {
-        size_t id = sc_invalidEntityID;
+        size_t id = c_invalidEntityID;
         if (m_entityCount == m_entityLimit)
         {
             size_t oldEntityLimit = m_entityLimit;
@@ -34,7 +34,7 @@ namespace OGLGAME
             m_ppEntities = ppNewEntities;
             id = oldEntityLimit;
         }
-        if (id == sc_invalidEntityID)
+        if (id == c_invalidEntityID)
         {
             for (size_t i = 0; i < m_entityLimit; i++)
             {

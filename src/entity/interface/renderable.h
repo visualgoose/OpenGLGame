@@ -19,7 +19,7 @@ namespace OGLGAME::Entities
         ~Renderable();
 
     private: //member variables
-        ResourceSystem::ResourceIndex m_model = ResourceSystem::sc_invalidResourceIndex;
+        ResourceSystem::ResourceIndex m_model = ResourceSystem::c_invalidResourceIndex;
 
     protected: //member functions
         void SetModel(ResourceSystem::ResourceIndex model);

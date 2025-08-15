@@ -17,11 +17,11 @@ namespace OGLGAME
         TypeHierarchy(TypeHierarchy&& other) noexcept;
 
     public: //member functions
-        bool HasInterface(const TypeCache::CachedType interfaceType) const noexcept;
+        [[nodiscard]] bool HasInterface(TypeCache::CachedType interfaceType) const noexcept;
         //check if "other" is the base type of this
-        bool Is(const TypeHierarchy& other) const noexcept;
+        [[nodiscard]] bool Is(const TypeHierarchy& other) const noexcept;
 
-        void AddInterface(const TypeCache::CachedType interfaceType);
+        void AddInterface(TypeCache::CachedType interfaceType);
         void AddChild(const char* pChildName);
     };
 }

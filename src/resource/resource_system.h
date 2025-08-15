@@ -1,10 +1,7 @@
 #pragma once
 
-#include <glad/glad.h>
-
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 #include "model.h"
 #include "texture.h"
@@ -32,20 +29,20 @@ namespace OGLGAME
             ResourceType m_resourceType = ResourceType_invalid;
 
         public: //member functions
-            bool IsValid()
+            bool IsValid() const noexcept
             {
-                return m_resourceIndex != sc_invalidResourceIndex &&
+                return m_resourceIndex != c_invalidResourceIndex &&
                     m_resourceType != ResourceType_invalid;
             }
 
         public: //operators
-            operator ResourceIndex() { return m_resourceIndex; }
+            operator ResourceIndex() const noexcept { return m_resourceIndex; }
         };
 
     public: //constants
-        static constexpr ResourceIndex sc_invalidResourceIndex = -1;
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
 
-    private: //member variabales
+    private: //member variables
         std::unordered_map<std::filesystem::path, ResourceID> m_path2ResourceID;
         std::vector<Model> m_models;
         std::vector<Texture> m_textures;

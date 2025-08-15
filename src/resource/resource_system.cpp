@@ -37,10 +37,9 @@ namespace OGLGAME
                     entrypathString);
                 continue;
             }
-            entrypathString = entrypath.string();
 
             size_t index = m_shaders.size();
-            m_shaders.emplace_back(entrypath);
+            m_shaders.emplace_back(entrypath, index);
             if (!m_shaders[index].IsValid())
             {
                 m_shaders.erase(m_shaders.begin() + index);
@@ -64,7 +63,7 @@ namespace OGLGAME
             }
 
             size_t index = m_materials.size();
-            m_materials.emplace_back(entrypath);
+            m_materials.emplace_back(entrypath, index);
             if (!m_materials[index].IsValid())
             {
                 m_materials.erase(m_materials.begin() + index);

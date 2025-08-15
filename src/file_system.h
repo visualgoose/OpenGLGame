@@ -24,14 +24,14 @@ namespace OGLGAME::FS
 
     public: //constructors
         FileOpenError() noexcept = default;
-        FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
+        explicit FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
 
     public: //operators
-        operator FileOpenErrorCode() const noexcept { return m_errorCode; }
-        operator const char* () const noexcept { return GetName(); }
+        explicit operator FileOpenErrorCode() const noexcept { return m_errorCode; }
+        explicit operator const char* () const noexcept { return GetName(); }
 
     public: //member functions
-        const char* GetName() const noexcept;
+        [[nodiscard]] const char* GetName() const noexcept;
     };
 
     std::expected<std::vector<uint8_t>, FileOpenError> ReadBinFile(const std::filesystem::path& filePath);

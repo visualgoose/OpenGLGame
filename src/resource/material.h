@@ -17,11 +17,15 @@ namespace OGLGAME
             Shader::PropertyType m_type;
             union
             {
-                std::string m_texturePath;
+                struct
+                {
+                    std::string m_texturePath;
+                    ResourceIndex resource_index = 0;
+                };
             };
 
         public: //constructors
-            PropertyValue(std::string texturePath);
+            explicit PropertyValue(std::string texturePath);
             PropertyValue(const PropertyValue& other);
             PropertyValue(PropertyValue&& other) noexcept;
             ~PropertyValue() noexcept;
@@ -31,16 +35,22 @@ namespace OGLGAME
             PropertyValue& operator=(PropertyValue&& other) noexcept;
         };
 
+    public: //constants
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
+
     private: //member variables
         bool m_valid = false;
+
         std::filesystem::path m_path;
-        ResourceIndex m_shaderIndex;
+        ResourceIndex m_resourceIndex;
+
+        ResourceIndex m_shaderIndex = c_invalidResourceIndex;
         std::vector<PropertyValue> m_propertyValues;
 
     public: //constructors
-        Material(const std::filesystem::path& filePath);
+        Material(std::filesystem::path filePath, ResourceIndex resourceIndex);
 
     public: //member functions
-        bool IsValid() const noexcept { return m_valid; }
+        [[nodiscard]] bool IsValid() const noexcept { return m_valid; }
     };
 }

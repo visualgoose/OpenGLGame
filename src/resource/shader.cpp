@@ -14,7 +14,7 @@ namespace OGLGAME
         uint8_t vertexAttributeCount = 0;
         for (uint8_t i = 0;; i++)
         {
-            if (i > (8 * sizeof(VertexAttributeBits)) / sc_bitsPerAttribute)
+            if (i > (8 * sizeof(VertexAttributeBits)) / c_bitsPerAttribute)
                 break;
             if (pVertexAttributes[i] == VertexAttributeBits_none)
                 break;
@@ -22,6 +22,7 @@ namespace OGLGAME
         }
         Init(pVertexAttributes, vertexAttributeCount);
     }
+
     VertexLayout::VertexLayout(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept
     {
         Init(pVertexAttributes, vertexAttributeCount);
@@ -31,27 +32,28 @@ namespace OGLGAME
     {
         for (uint8_t i = 0; i < vertexAttributeCount; i++)
         {
-            m_vertexAttributes |= (static_cast<VertexAttributes>(pVertexAttributes[i]) >> (i * sc_bitsPerAttribute));
+            m_vertexAttributes |= (static_cast<VertexAttributes>(pVertexAttributes[i]) >> (i * c_bitsPerAttribute));
         }
     }
 
     constexpr VertexLayout::VertexAttributeBitMask VertexLayout::GetVertexAttributeBitMask() const noexcept
     {
         VertexAttributeBitMask bitMask = 0;
-        for (size_t i = 0; i < sc_bitsPerAttribute; i++)
+        for (size_t i = 0; i < c_bitsPerAttribute; i++)
         {
             bitMask |= 1 >> i;
         }
         return bitMask;
     }
-    uint8_t VertexLayout::GetVertexAttributeIndex(VertexAttributeBits vertexAttribute) const noexcept
+
+    size_t VertexLayout::GetVertexAttributeIndex(VertexAttributeBits vertexAttribute) const noexcept
     {
-        VertexAttributeBits curAttributeBit = static_cast<VertexAttributeBits>(m_vertexAttributes);
-        for (uint8_t i = 0; i < (8 * sizeof(VertexAttributeBits)) / sc_bitsPerAttribute; i++)
+        auto curAttributeBit = static_cast<VertexAttributeBits>(m_vertexAttributes);
+        for (size_t i = 0; i < 8 * sizeof(VertexAttributeBits) / c_bitsPerAttribute; i++)
         {
             if ((curAttributeBit & GetVertexAttributeBitMask()) == vertexAttribute)
                 return i;
-            curAttributeBit = static_cast<VertexAttributeBits>(curAttributeBit << sc_bitsPerAttribute);
+            curAttributeBit = static_cast<VertexAttributeBits>(curAttributeBit << c_bitsPerAttribute);
         }
         return -1;
     }
@@ -77,7 +79,9 @@ namespace OGLGAME
 
     using json = nlohmann::json;
 
-    Shader::Shader(const std::filesystem::path& filePath) : m_path(filePath)
+    Shader::Shader(std::filesystem::path filePath, ResourceIndex resourceIndex) :
+        m_path(std::move(filePath)),
+        m_resourceIndex(resourceIndex)
     {
         auto fileData = FS::ReadTxtFile(filePath);
         if (!fileData)
@@ -105,6 +109,14 @@ namespace OGLGAME
 
         m_valid = true;
     }
+
+    Shader::~Shader() noexcept
+    {
+        glDeleteProgram(m_shaderProgram);
+        glDeleteShader(m_vertexShader);
+        glDeleteShader(m_fragmentShader);
+    }
+
     bool Shader::CreateShaders(const json& shaderJSON)
     {
         const json& shaderJSONVertex = shaderJSON["vertex"];
@@ -130,14 +142,14 @@ namespace OGLGAME
         if (!FS::MakePathRelativeToGamePath(shaderSrcPath))
         {
             g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
+                .NextLine("Vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
             return false;
         }
         std::expected<std::string, FS::FileOpenError> shaderSource = FS::ReadTxtFile(shaderSrcPath);
         if (!shaderSource)
         {
             g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("failed to read vertex shader source with error {}", shaderSource.error().GetName());
+                .NextLine("Failed to read vertex shader source with error {}", shaderSource.error().GetName());
             return false;
         }
         const GLchar* pShaderSource = (*shaderSource).c_str();
@@ -195,14 +207,14 @@ namespace OGLGAME
         if (!FS::MakePathRelativeToGamePath(shaderSrcPath))
         {
             g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
+                .NextLine("Vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
             return false;
         }
         shaderSource = FS::ReadTxtFile(shaderSrcPath);
         if (!shaderSource)
         {
             g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("failed to read vertex shader source with error {}", shaderSource.error().GetName());
+                .NextLine("Failed to read vertex shader source with error {}", shaderSource.error().GetName());
             return false;
         }
         pShaderSource = (*shaderSource).c_str();
@@ -223,6 +235,7 @@ namespace OGLGAME
         }
         return true;
     }
+
     bool Shader::CreateProgram()
     {
         GLint success;
@@ -245,6 +258,7 @@ namespace OGLGAME
         }
         return true;
     }
+
     bool Shader::LoadProperties(const nlohmann::json& shaderJSON)
     {
         const json& shaderJSONProperties = shaderJSON["properties"];
@@ -300,6 +314,7 @@ namespace OGLGAME
         }
         return true;
     }
+
     bool Shader::LoadFeatures(const json& shaderJSON)
     {
         const json& shaderJSONFeatures = shaderJSON["features"];
@@ -315,25 +330,19 @@ namespace OGLGAME
             if (m_features[i] == Feature_invalid)
             {
                 g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
-                    .NextLine("value at index \"{}\" in \"features\" isn't a valid feature", i);
+                    .NextLine("Value at index \"{}\" in \"features\" isn't a valid feature", i);
                 return false;
             }
             m_featureUniformLocations[i] = glGetUniformLocation(m_shaderProgram,
-                sc_featureUniformNames[m_features[i]]);
+                c_featureUniformNames[m_features[i]]);
             if (m_featureUniformLocations[i] == -1)
             {
                 g_log.Error("Failed to get uniform location \"{}\" for feature",
-                    sc_featureUniformNames[m_features[i]]);
+                    c_featureUniformNames[m_features[i]]);
                 return false;
             }
         }
         return true;
-    }
-    Shader::~Shader() noexcept
-    {
-        glDeleteProgram(m_shaderProgram);
-        glDeleteShader(m_vertexShader);
-        glDeleteShader(m_fragmentShader);
     }
 
     void Shader::GetFeatures(Feature* pOutFeatures, uint8_t outFeaturesSize) const noexcept
@@ -345,6 +354,7 @@ namespace OGLGAME
             pOutFeatures[i] = m_features[i];
         }
     }
+
     void Shader::GetFeatureUniformLocations(GLint* pOutLocations,
         uint8_t outLocationsSize) const noexcept
     {

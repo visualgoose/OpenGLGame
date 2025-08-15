@@ -4,7 +4,7 @@
 
 namespace OGLGAME::Entities
 {
-    TypeCache::CachedType Renderable::s_type = TypeCache::sc_invalidType;
+    TypeCache::CachedType Renderable::s_type = TypeCache::c_invalidType;
 
     void Renderable::S_CacheType()
     {
@@ -19,7 +19,7 @@ namespace OGLGAME::Entities
 
     Renderable::~Renderable()
     {
-        if (m_model != ResourceSystem::sc_invalidResourceIndex)
+        if (m_model != ResourceSystem::c_invalidResourceIndex)
         {
             //Client::S_GetInstance()
             //    .GetResourceSystem()
@@ -32,7 +32,7 @@ namespace OGLGAME::Entities
         if (m_model == model)
             return;
         ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-        if (m_model != ResourceSystem::sc_invalidResourceIndex)
+        if (m_model != ResourceSystem::c_invalidResourceIndex)
         {
             //resourceSystem.ReleaseModel(m_model);
         }
@@ -45,7 +45,7 @@ namespace OGLGAME::Entities
         //if (m_model != ResourceSystem::sc_invalidResourceIndex && m_model == model)
         //    return m_model;
 
-        if (m_model != ResourceSystem::sc_invalidResourceIndex)
+        if (m_model != ResourceSystem::c_invalidResourceIndex)
             //resourceSystem.ReleaseModel(m_model);
 
             //if (model != ResourceSystem::sc_invalidResourceIndex)

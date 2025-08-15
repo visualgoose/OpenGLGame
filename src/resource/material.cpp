@@ -77,7 +77,9 @@ namespace OGLGAME
         return *this;
     }
 
-    Material::Material(const std::filesystem::path& filePath) : m_path(filePath)
+    Material::Material(std::filesystem::path filePath, ResourceIndex resourceIndex) :
+        m_path(std::move(filePath)),
+        m_resourceIndex(resourceIndex)
     {
         auto fileData = FS::ReadTxtFile(filePath);
         if (!fileData)
@@ -111,7 +113,7 @@ namespace OGLGAME
         const ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
         ResourceSystem::ResourceID shaderID = resourceSystem.GetResourceID(shaderPath);
         m_shaderIndex = shaderID.m_resourceIndex;
-        if (m_shaderIndex == ResourceSystem::sc_invalidResourceIndex ||
+        if (m_shaderIndex == ResourceSystem::c_invalidResourceIndex ||
             shaderID.m_resourceType != ResourceSystem::ResourceType_shader)
         {
             g_log.Error("Failed to load material file \"{}\":", filePath.string())

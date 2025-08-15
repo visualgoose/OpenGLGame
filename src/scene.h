@@ -12,7 +12,7 @@ namespace OGLGAME
         using EntityID = size_t;
 
     public: //constants
-        static constexpr size_t sc_invalidEntityID = -1;
+        static constexpr size_t c_invalidEntityID = -1;
 
     private: //member variables
         size_t m_entityCount = 0;

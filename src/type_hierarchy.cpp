@@ -24,7 +24,7 @@ namespace OGLGAME
 
     bool TypeHierarchy::HasInterface(const TypeCache::CachedType interfaceType) const noexcept
     {
-        vgassert(interfaceType != TypeCache::sc_invalidType);
+        vgassert(interfaceType != TypeCache::c_invalidType);
 
         for (const auto& interface : m_interfaces)
         {
@@ -45,7 +45,7 @@ namespace OGLGAME
     }
     void TypeHierarchy::AddInterface(const TypeCache::CachedType interfaceType)
     {
-        vgassert(interfaceType != TypeCache::sc_invalidType);
+        vgassert(interfaceType != TypeCache::c_invalidType);
         m_interfaces.push_back(interfaceType);
     }
     void TypeHierarchy::AddChild(const char* pChildName)

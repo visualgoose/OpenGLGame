@@ -11,7 +11,7 @@ namespace OGLGAME
         using CachedType = size_t;
 
     public: //constants
-        static constexpr CachedType sc_invalidType = -1;
+        static constexpr CachedType c_invalidType = -1;
 
     private: //member variables
         std::vector<std::string> m_types;

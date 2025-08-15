@@ -12,7 +12,7 @@ namespace OGLGAME
 {
     struct VertexLayout
     {
-    public:
+    public: //data types and related constants
         using VertexAttributes = uint16_t;
         using VertexAttributeBitMask = VertexAttributes;
         enum VertexAttributeBits : VertexAttributes
@@ -23,30 +23,35 @@ namespace OGLGAME
             VertexAttributeBits_EndOfEnum
         };
         static constexpr VertexAttributes VertexAttributeBits_Count = VertexAttributeBits_EndOfEnum - 1;
-    public:
-        static constexpr size_t sc_bitsPerAttribute = 4;
-        static constexpr uint8_t sc_invalidVAIndex = -1;
-    private:
+
+    public: //constants
+        static constexpr size_t c_bitsPerAttribute = 4;
+        static constexpr uint8_t c_invalidVAIndex = -1;
+
+    private: //member variables
         VertexAttributes m_vertexAttributes = 0;
-    public:
+
+    public: //constructors, setup functions
         VertexLayout() = default;
         /*
         * \param pVertexAttributes must be terminated using VertexAttributeBits_none
         */
-        VertexLayout(const VertexAttributeBits* pVertexAttributes) noexcept;
+        explicit VertexLayout(const VertexAttributeBits* pVertexAttributes) noexcept;
         VertexLayout(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept;
-        VertexLayout(VertexAttributes vertexAttributes) noexcept : m_vertexAttributes(vertexAttributes) {}
+        explicit VertexLayout(const VertexAttributes vertexAttributes) noexcept : m_vertexAttributes(vertexAttributes) {}
     private:
         void Init(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept;
-    public:
-        operator VertexAttributes() const noexcept { return m_vertexAttributes; }
-    public:
-        VertexAttributes GetVertexAttributes() const noexcept { return m_vertexAttributes; }
-    public:
+
+    public: //operators
+        explicit operator VertexAttributes() const noexcept { return m_vertexAttributes; }
+
+    public: //member functions
+        [[nodiscard]] VertexAttributes GetVertexAttributes() const noexcept { return m_vertexAttributes; }
+
         //returns bit mask of sc_bitsPerAttribute, so if sc_bitsPerAttribute is 4 then
         //return value is "1111 0000 0000 0000" in binary
-        constexpr VertexAttributeBitMask GetVertexAttributeBitMask() const noexcept;
-        uint8_t GetVertexAttributeIndex(VertexAttributeBits vertexAttribute) const noexcept;
+        [[nodiscard]] constexpr VertexAttributeBitMask GetVertexAttributeBitMask() const noexcept;
+        [[nodiscard]] size_t GetVertexAttributeIndex(VertexAttributeBits vertexAttribute) const noexcept;
     };
 
     class Shader
@@ -75,8 +80,8 @@ namespace OGLGAME
         static constexpr uint8_t Feature_Count = Feature_EndOfEnum - 1;
 
     public: //constants
-        static constexpr ResourceIndex sc_invalidResourceIndex = -1;
-        static constexpr const char* sc_featureUniformNames[Feature_EndOfEnum] =
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
+        static constexpr const char* c_featureUniformNames[Feature_EndOfEnum] =
         {
             "invalid",
             "u_oglgame_mvp"
@@ -84,8 +89,10 @@ namespace OGLGAME
 
     private: //member variables
         bool m_valid = false;
+
         std::filesystem::path m_path;
-        ResourceIndex m_resourceIndex = sc_invalidResourceIndex;
+        ResourceIndex m_resourceIndex = c_invalidResourceIndex;
+
         std::vector<Property> m_properties;
         Feature m_features[Feature_Count] = { Feature_invalid };
         GLint m_featureUniformLocations[Feature_Count] = { 0 };
@@ -98,10 +105,8 @@ namespace OGLGAME
 
     public: //constructors and setup functions
         Shader() = default;
-        Shader(const std::filesystem::path& filePath);
-    public:
+        Shader(std::filesystem::path filePath, ResourceIndex resourceIndex);
         ~Shader() noexcept;
-
     private:
         //also loads vertex layout
         bool CreateShaders(const nlohmann::json& shaderJSON);
@@ -110,18 +115,19 @@ namespace OGLGAME
         bool LoadFeatures(const nlohmann::json& shaderJSON);
 
     public: //member functions
-        bool IsValid() const noexcept { return m_valid; }
+        [[nodiscard]] bool IsValid() const noexcept { return m_valid; }
 
         [[nodiscard]] const std::filesystem::path& GetPath() const noexcept { return m_path; }
         [[nodiscard]] ResourceIndex GetIndex() const noexcept { return m_resourceIndex; }
+
         [[nodiscard]] const std::vector<Property>& GetProperties() const noexcept { return m_properties; }
         void GetFeatures(Feature* pOutFeatures, uint8_t pOutFeaturesMaxSize) const noexcept;
         void GetFeatureUniformLocations(GLint* pOutLocations, uint8_t outLocationsSize) const noexcept;
         [[nodiscard]] const VertexLayout& GetVertexLayout() const noexcept { return m_vertexLayout; }
 
-        GLuint GetVertexShader() const noexcept { return m_vertexShader; }
-        GLuint GetFragmentShader() const noexcept { return m_fragmentShader; }
-        GLuint GetShaderProgram() const noexcept { return m_shaderProgram; }
+        [[nodiscard]] GLuint GetVertexShader() const noexcept { return m_vertexShader; }
+        [[nodiscard]] GLuint GetFragmentShader() const noexcept { return m_fragmentShader; }
+        [[nodiscard]] GLuint GetShaderProgram() const noexcept { return m_shaderProgram; }
 
     friend class ResourceSystem;
     };

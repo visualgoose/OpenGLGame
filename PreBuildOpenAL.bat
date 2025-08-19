@@ -34,6 +34,12 @@ cmake -S . -B reldbg-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=
 cmake --build reldbg-build --config RelWithDebInfo
 cp -f reldbg-build/OpenAL32.lib ../../extbin/Win-RelWithDebInfo/OpenAL32.lib
 cp -f reldbg-build/OpenAL32.dll ../../OGLGAME/bin/Win-RelWithDebInfo/OpenAL32.dll
-cp -f reldbg-build/OpenAL32.pdb ../../OGLGAME/bin/Win-RelWithDebInfo/ 
+cp -f reldbg-build/OpenAL32.pdb ../../OGLGAME/bin/Win-RelWithDebInfo/
+
+#cleanup
+rmdir debug-build /s /q
+rmdir release-build /s /q
+rmdir reldbg-build /s /q
+
 
 PAUSE

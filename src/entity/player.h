@@ -7,6 +7,7 @@ namespace OGLGAME::Entities
     class Player : public Entity
     {
     private: //static variables
+        static bool s_typeHierarchyInitialized;
         static TypeHierarchy s_typeHierarchy;
 
     public: //static functions

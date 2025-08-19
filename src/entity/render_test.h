@@ -8,6 +8,7 @@ namespace OGLGAME::Entities
     class RenderTest : Entity, Renderable
     {
     private: //static variables
+        static bool s_typeHierarchyInitialized;
         static TypeHierarchy s_typeHierarchy;
 
     public: //static functions

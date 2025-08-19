@@ -7,7 +7,7 @@
 
 namespace OGLGAME
 {
-    Texture::Texture(std::filesystem::path path, ResourceIndex resourceIndex) :
+    Texture::Texture(std::filesystem::path path, const ResourceIndex resourceIndex) :
         m_path(std::move(path)),
         m_resourceIndex(resourceIndex)
     {
@@ -70,5 +70,19 @@ namespace OGLGAME
         SDL_DestroySurface(texData);
 
         m_valid = true;
+    }
+
+    void Texture::AddRef() noexcept
+    {
+        vgassert(m_valid);
+
+        m_refCount++;
+    }
+
+    void Texture::Release() noexcept
+    {
+        vgassert(m_valid);
+
+        m_refCount--;
     }
 }

@@ -29,7 +29,7 @@ namespace OGLGAME
             ResourceType m_resourceType = ResourceType_invalid;
 
         public: //member functions
-            bool IsValid() const noexcept
+            [[nodiscard]] bool IsValid() const noexcept
             {
                 return m_resourceIndex != c_invalidResourceIndex &&
                     m_resourceType != ResourceType_invalid;
@@ -59,9 +59,25 @@ namespace OGLGAME
         ResourceSystem& operator=(ResourceSystem&) = delete;
 
     public: //member functions
+        void ModelRelease(ResourceIndex modelIndex) noexcept;
+        void ModelAddRef(ResourceIndex modelIndex) noexcept;
+        ResourceIndex ModelAddRef(const std::filesystem::path& modelPath) noexcept;
+
+        void MaterialRelease(ResourceIndex modelIndex) noexcept;
+        void MaterialAddRef(ResourceIndex modelIndex) noexcept;
+        ResourceIndex MaterialAddRef(const std::filesystem::path& modelPath) noexcept;
+
+        void TextureRelease(ResourceIndex modelIndex) noexcept;
+        void TextureAddRef(ResourceIndex modelIndex) noexcept;
+        ResourceIndex TextureAddRef(const std::filesystem::path& modelPath) noexcept;
+
         ResourceID GetResourceID(const std::filesystem::path& filePath) const noexcept;
 
+        const Model& GetModel(ResourceIndex modelIndex) const noexcept;
+        const Texture& GetTexture(ResourceIndex textureIndex) const noexcept;
+        const Material& GetMaterial(ResourceIndex materialIndex) const noexcept;
         const Shader& GetShader(ResourceIndex shaderIndex) const noexcept;
+
 
     friend class Client;
     };

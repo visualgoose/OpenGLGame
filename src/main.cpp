@@ -39,8 +39,7 @@ int main(int argCount, char** ppArgs)
     fs::current_path(engineRootDir);
     g_log.Info("Engine directory: {}", engineRootDir.string());
 
-    if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
-    {
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
         g_log.Fatal("SDL3 failed to initialize:")
             .NextLine("{}", SDL_GetError());
         return -1;

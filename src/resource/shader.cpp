@@ -86,7 +86,7 @@ namespace OGLGAME
         auto fileData = FS::ReadTxtFile(filePath);
         if (!fileData)
         {
-            g_log.Error("Failed to open shader file \"{}\" with following error:", filePath.string())
+            g_log.Error("Failed to open shader file \"{}\" with following error:", m_path.string())
                 .NextLine("{}", fileData.error().GetName());
             return;
         }
@@ -94,7 +94,7 @@ namespace OGLGAME
             false, true);
         if (shaderJSON.is_null())
         {
-            g_log.Error("Failed to parse shader file \"{}\":", filePath.string());
+            g_log.Error("Failed to parse shader file \"{}\":", m_path.string());
             return;
         }
 

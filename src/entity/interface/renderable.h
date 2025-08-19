@@ -12,7 +12,7 @@ namespace OGLGAME::Entities
 
     public: //static functions
         static void S_CacheType();
-        static const TypeCache::CachedType S_GetType();
+        static TypeCache::CachedType S_GetType();
 
     public: //constructors
         Renderable() = default;

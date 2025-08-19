@@ -8,11 +8,13 @@ namespace OGLGAME::Entities
 
     void Renderable::S_CacheType()
     {
+        if (s_type != TypeCache::c_invalidType)
+            return;
         s_type = Client::S_GetInstance()
             .GetTypeCache()
             .FindOrCreateType("irenderable");
     }
-    const TypeCache::CachedType Renderable::S_GetType()
+    TypeCache::CachedType Renderable::S_GetType()
     {
         return s_type;
     }

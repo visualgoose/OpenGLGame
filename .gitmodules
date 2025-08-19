@@ -1,0 +1,3 @@
+[submodule "ext/openal"]
+	path = ext/openal
+	url = https://github.com/kcat/openal-soft.git

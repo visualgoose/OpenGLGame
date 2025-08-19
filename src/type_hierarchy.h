@@ -13,8 +13,6 @@ namespace OGLGAME
 
     public: //constructors
         TypeHierarchy();
-        TypeHierarchy(const TypeHierarchy& other);
-        TypeHierarchy(TypeHierarchy&& other) noexcept;
 
     public: //member functions
         [[nodiscard]] bool HasInterface(TypeCache::CachedType interfaceType) const noexcept;

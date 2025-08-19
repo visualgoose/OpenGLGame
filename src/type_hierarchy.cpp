@@ -11,16 +11,6 @@ namespace OGLGAME
         m_hierarchy.reserve(4);
         m_interfaces.reserve(2);
     }
-    TypeHierarchy::TypeHierarchy(const TypeHierarchy& other)
-    {
-        m_hierarchy = other.m_hierarchy;
-        m_interfaces = other.m_interfaces;
-    }
-    TypeHierarchy::TypeHierarchy(TypeHierarchy&& other) noexcept
-    {
-        m_hierarchy = std::move(other.m_hierarchy);
-        m_interfaces = std::move(other.m_interfaces);
-    }
 
     bool TypeHierarchy::HasInterface(const TypeCache::CachedType interfaceType) const noexcept
     {

@@ -1,13 +1,17 @@
 #include "player.h"
 
 #include "logging.h"
+#include "interface/renderable.h"
 
 namespace OGLGAME::Entities
 {
+    bool Player::s_typeHierarchyInitialized = false;
     TypeHierarchy Player::s_typeHierarchy = TypeHierarchy();
 
     void Player::S_CacheType()
     {
+        if (s_typeHierarchyInitialized)
+            return;
         s_typeHierarchy.AddChild("player");
     }
 

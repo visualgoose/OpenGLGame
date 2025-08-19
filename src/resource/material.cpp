@@ -84,7 +84,7 @@ namespace OGLGAME
         auto fileData = FS::ReadTxtFile(filePath);
         if (!fileData)
         {
-            g_log.Error("Failed to open material file \"{}\" with following error:", filePath.string())
+            g_log.Error("Failed to open material file \"{}\" with following error:", m_path.string())
                 .NextLine("{}", fileData.error().GetName());
             return;
         }
@@ -92,14 +92,14 @@ namespace OGLGAME
             false, true);
         if (materialJSON.is_null())
         {
-            g_log.Error("Failed to parse material file \"{}\"", filePath.string());
+            g_log.Error("Failed to parse material file \"{}\"", m_path.string());
             return;
         }
 
         const json& shaderPathJSON = materialJSON["shaderPath"];
         if (!shaderPathJSON.is_string())
         {
-            g_log.Error("Failed to parse material file \"{}\":", filePath.string())
+            g_log.Error("Failed to parse material file \"{}\":", m_path.string())
                 .NextLine("\"shaderPath\" is not a string");
             return;
         }
@@ -116,7 +116,7 @@ namespace OGLGAME
         if (m_shaderIndex == ResourceSystem::c_invalidResourceIndex ||
             shaderID.m_resourceType != ResourceSystem::ResourceType_shader)
         {
-            g_log.Error("Failed to load material file \"{}\":", filePath.string())
+            g_log.Error("Failed to load material file \"{}\":", m_path.string())
                 .NextLine("Could not find ResourceID for shader path \"{}\" or resource type wasn't shader",
                     shaderPathStr);
             return;
@@ -137,7 +137,7 @@ namespace OGLGAME
             }
             if (foundIndex == -1)
             {
-                g_log.Error("Failed to load material file \"{}\":", filePath.string())
+                g_log.Error("Failed to load material file \"{}\":", m_path.string())
                     .NextLine("Could not find property id \"{}\" in shader \"{}\"", propertyName, shaderPathStr);
                 return;
             }
@@ -147,5 +147,48 @@ namespace OGLGAME
         }
 
         m_valid = true;
+    }
+
+    void Material::AddRef() const noexcept
+    {
+        vgassert(m_valid);
+
+        for (const auto& propertyValue : m_propertyValues)
+        {
+            switch (propertyValue.m_type)
+            {
+                case Shader::PropertyType_tex2D:
+                    if (propertyValue.m_resourceIndex != c_invalidResourceIndex)
+                        Client::S_GetInstance()
+                            .GetResourceSystem()
+                            .TextureAddRef(propertyValue.m_resourceIndex);
+                    else
+                        Client::S_GetInstance()
+                            .GetResourceSystem()
+                            .TextureAddRef(propertyValue.m_texturePath);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void Material::Release() const noexcept
+    {
+        vgassert(m_valid);
+
+        for (const auto& propertyValue : m_propertyValues)
+        {
+            switch (propertyValue.m_type)
+            {
+                case Shader::PropertyType_tex2D:
+                    Client::S_GetInstance()
+                        .GetResourceSystem()
+                        .TextureRelease(propertyValue.m_resourceIndex);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

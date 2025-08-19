@@ -10,8 +10,7 @@
 
 #include "file_system.h"
 
-namespace OGLGAME
-{
+namespace OGLGAME {
     ResourceSystem::ResourceSystem()
     {
         m_path2ResourceID.reserve(16);
@@ -79,6 +78,27 @@ namespace OGLGAME
         if (resourceIDIt == m_path2ResourceID.end())
             return {};
         return resourceIDIt->second;
+    }
+
+    const Model& ResourceSystem::GetModel(ResourceIndex modelIndex) const noexcept
+    {
+        vgassert(m_models.size() > modelIndex);
+
+        return m_models[modelIndex];
+    }
+
+    const Texture& ResourceSystem::GetTexture(ResourceIndex textureIndex) const noexcept
+    {
+        vgassert(m_textures.size() > textureIndex);
+
+        return m_textures[textureIndex];
+    }
+
+    const Material& ResourceSystem::GetMaterial(ResourceIndex materialIndex) const noexcept
+    {
+        vgassert(m_materials.size() > materialIndex);
+
+        return m_materials[materialIndex];
     }
 
     const Shader& ResourceSystem::GetShader(const ResourceIndex shaderIndex) const noexcept

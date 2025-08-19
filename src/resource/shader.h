@@ -107,6 +107,7 @@ namespace OGLGAME
         Shader() = default;
         Shader(std::filesystem::path filePath, ResourceIndex resourceIndex);
         ~Shader() noexcept;
+
     private:
         //also loads vertex layout
         bool CreateShaders(const nlohmann::json& shaderJSON);
@@ -128,7 +129,5 @@ namespace OGLGAME
         [[nodiscard]] GLuint GetVertexShader() const noexcept { return m_vertexShader; }
         [[nodiscard]] GLuint GetFragmentShader() const noexcept { return m_fragmentShader; }
         [[nodiscard]] GLuint GetShaderProgram() const noexcept { return m_shaderProgram; }
-
-    friend class ResourceSystem;
     };
 }

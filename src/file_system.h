@@ -24,7 +24,7 @@ namespace OGLGAME::FS
 
     public: //constructors
         FileOpenError() noexcept = default;
-        explicit FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
+        FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
 
     public: //operators
         explicit operator FileOpenErrorCode() const noexcept { return m_errorCode; }

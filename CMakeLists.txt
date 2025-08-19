@@ -14,7 +14,7 @@ message(FATAL_ERROR "Unsupported platform! (l bozo )")
 endif()
 
 set(BIN_DIR "${CMAKE_SOURCE_DIR}/OGLGAME/bin/${OGLGAME_PLATFORM}-${CMAKE_BUILD_TYPE}")
-set(EXTBIN_DIR "${CMAKE_SOURCE_DIR}/extbin/${CMAKE_BUILD_TYPE}")
+set(EXTBIN_DIR "${CMAKE_SOURCE_DIR}/extbin/${OGLGAME_PLATFORM}-${CMAKE_BUILD_TYPE}")
 
 if(WIN32)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
@@ -109,18 +109,5 @@ FetchContent_MakeAvailable(assimp)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
 #openal
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/openal/include")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${EXTBIN_DIR}/OpenAL32.lib")
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${EXTBIN_DIR}/OpenAL32.dll
-                ${BIN_DIR}/OpenAL32.dll
-)
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${EXTBIN_DIR}/OpenAL32.pdb
-                ${BIN_DIR}/OpenAL32.pdb
-)
-endif()

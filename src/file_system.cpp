@@ -50,7 +50,7 @@ namespace OGLGAME::FS
         file.seekg(0); //set pointer to 0, so file reads properly
         if (!file.read(reinterpret_cast<char*>(fileData.data()), fileSize))
             return std::unexpected(FileOpenErrorCode_readFailure);
-
+        int x = __cplusplus
         file.close();
         return fileData;
     }

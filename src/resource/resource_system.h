@@ -67,9 +67,9 @@ namespace OGLGAME
         void MaterialAddRef(ResourceIndex modelIndex) noexcept;
         ResourceIndex MaterialAddRef(const std::filesystem::path& modelPath) noexcept;
 
-        void TextureRelease(ResourceIndex modelIndex) noexcept;
-        void TextureAddRef(ResourceIndex modelIndex) noexcept;
-        ResourceIndex TextureAddRef(const std::filesystem::path& modelPath) noexcept;
+        void TextureRelease(ResourceIndex modelIndex) noexcept {}
+        void TextureAddRef(ResourceIndex modelIndex) noexcept {}
+        ResourceIndex TextureAddRef(const std::filesystem::path& modelPath) noexcept {}
 
         ResourceID GetResourceID(const std::filesystem::path& filePath) const noexcept;
 

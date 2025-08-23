@@ -18,11 +18,11 @@ namespace OGLGAME
         using ResourceIndex = size_t;
         struct Mesh
         {
-            ResourceIndex m_materialIndex;
-            GLuint m_vao;
-            GLuint m_vbo;
-            GLuint m_ebo;
-            uint32_t m_indexCount;
+            ResourceIndex m_materialIndex = -1;
+            GLuint m_vao = 0;
+            GLuint m_vbo = 0;
+            GLuint m_ebo = 0;
+            uint32_t m_indexCount = 0;
         };
 
     public: //constants
@@ -32,15 +32,18 @@ namespace OGLGAME
         bool m_valid = false;
         std::filesystem::path m_path;
         ResourceIndex m_resourceIndex = c_invalidResourceIndex;
-        size_t m_refCount = 0;
+        size_t m_refCount = 1;
         std::vector<Mesh> m_meshes;
 
     public: //constructors
-        Model(std::filesystem::path path, ResourceIndex resourceIndex);
+        Model() = default;
 
     public: //member functions
+        void Load(std::filesystem::path path, ResourceIndex resourceIndex);
         void AddRef() noexcept;
+
         void Release() noexcept;
+        void CleanUp() noexcept;
 
         [[nodiscard]] bool IsValid() const noexcept { return m_valid; }
         [[nodiscard]] const std::filesystem::path& GetPath() const noexcept { return m_path; }

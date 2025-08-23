@@ -35,6 +35,7 @@ int main(int argCount, char** ppArgs)
             "-" OGLGAME_BUILD_TYPE);
         return -1;
     }
+
     //set engine's root directory as current directory
     fs::current_path(engineRootDir);
     g_log.Info("Engine directory: {}", engineRootDir.string());

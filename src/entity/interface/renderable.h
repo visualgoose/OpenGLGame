@@ -23,6 +23,6 @@ namespace OGLGAME::Entities
 
     protected: //member functions
         void SetModel(ResourceSystem::ResourceIndex model);
-        ResourceSystem::ResourceIndex SetModel(const std::string& pModelPath);
+        ResourceSystem::ResourceIndex SetModel(const std::string& modelPath);
     };
 }

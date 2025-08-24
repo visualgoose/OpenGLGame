@@ -27,6 +27,8 @@
 
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+//shitty code, will be rewritten to use spdlog
+
 namespace OGLGAME
 {
     class LogContinue

@@ -27,8 +27,8 @@ namespace OGLGAME::FS
         FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
 
     public: //operators
-        explicit operator FileOpenErrorCode() const noexcept { return m_errorCode; }
-        explicit operator const char* () const noexcept { return GetName(); }
+        operator FileOpenErrorCode() const noexcept { return m_errorCode; }
+        operator const char* () const noexcept { return GetName(); }
 
     public: //member functions
         [[nodiscard]] const char* GetName() const noexcept;
@@ -37,7 +37,7 @@ namespace OGLGAME::FS
     std::expected<std::vector<uint8_t>, FileOpenError> ReadBinFile(const std::filesystem::path& filePath);
     std::expected<std::string, FileOpenError> ReadTxtFile(const std::filesystem::path& filePath);
 
-    /*
+    /**
     * \param path the path that will be made relative
     * 
     * \returns is resulting path in the game directory

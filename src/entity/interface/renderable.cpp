@@ -1,6 +1,7 @@
 #include "renderable.h"
 
 #include "client.h"
+#include "logging.h"
 
 namespace OGLGAME::Entities
 {
@@ -23,38 +24,42 @@ namespace OGLGAME::Entities
     {
         if (m_model != ResourceSystem::c_invalidResourceIndex)
         {
-            //Client::S_GetInstance()
-            //    .GetResourceSystem()
-            //    .ReleaseModel(m_model);
+            Client::S_GetInstance()
+                .GetResourceSystem()
+                .ModelRelease(m_model);
         }
     }
 
-    void Renderable::SetModel(ResourceSystem::ResourceIndex model)
+    void Renderable::SetModel(const ResourceSystem::ResourceIndex model)
     {
         if (m_model == model)
             return;
         ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
         if (m_model != ResourceSystem::c_invalidResourceIndex)
         {
-            //resourceSystem.ReleaseModel(m_model);
+            resourceSystem.ModelRelease(m_model);
         }
-        //resourceSystem.AddRefModel(model);
+        resourceSystem.ModelAddRef(model);
+        m_model = model;
     }
+
     ResourceSystem::ResourceIndex Renderable::SetModel(const std::string& modelPath)
     {
         ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-        //ResourceSystem::ResourceIndex model = resourceSystem.GetModel(modelPath);
-        //if (m_model != ResourceSystem::sc_invalidResourceIndex && m_model == model)
-        //    return m_model;
+        const ResourceSystem::ResourceIndex modelIndex = resourceSystem.GetResourceID(modelPath).m_resourceIndex;
+        if (m_model != ResourceSystem::c_invalidResourceIndex && m_model == modelIndex)
+            return m_model;
 
         if (m_model != ResourceSystem::c_invalidResourceIndex)
-            //resourceSystem.ReleaseModel(m_model);
+            resourceSystem.ModelRelease(m_model);
 
-            //if (model != ResourceSystem::sc_invalidResourceIndex)
-                //m_model = resourceSystem.AddRefModel(model);
-                ;
+        if (modelIndex != ResourceSystem::c_invalidResourceIndex)
+        {
+            m_model = modelIndex;
+            resourceSystem.ModelAddRef(m_model);
+        }
         else
-            //m_model = resourceSystem.AddRefModel(modelPath);
+            m_model = resourceSystem.ModelAddRef(modelPath);
         return m_model;
     }
 }

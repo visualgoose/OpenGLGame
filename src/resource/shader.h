@@ -10,50 +10,6 @@
 
 namespace OGLGAME
 {
-    struct VertexLayout
-    {
-    public: //data types and related constants
-        using VertexAttributes = uint16_t;
-        using VertexAttributeBitMask = VertexAttributes;
-        enum VertexAttributeBits : VertexAttributes
-        {
-            VertexAttributeBits_none,
-            VertexAttributeBits_position,
-            VertexAttributeBits_texCoord,
-            VertexAttributeBits_EndOfEnum
-        };
-        static constexpr VertexAttributes VertexAttributeBits_Count = VertexAttributeBits_EndOfEnum - 1;
-
-    public: //constants
-        static constexpr size_t c_bitsPerAttribute = 4;
-        static constexpr uint8_t c_invalidVAIndex = -1;
-
-    private: //member variables
-        VertexAttributes m_vertexAttributes = 0;
-
-    public: //constructors, setup functions
-        VertexLayout() = default;
-        /*
-        * \param pVertexAttributes must be terminated using VertexAttributeBits_none
-        */
-        explicit VertexLayout(const VertexAttributeBits* pVertexAttributes) noexcept;
-        VertexLayout(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept;
-        explicit VertexLayout(const VertexAttributes vertexAttributes) noexcept : m_vertexAttributes(vertexAttributes) {}
-    private:
-        void Init(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept;
-
-    public: //operators
-        explicit operator VertexAttributes() const noexcept { return m_vertexAttributes; }
-
-    public: //member functions
-        [[nodiscard]] VertexAttributes GetVertexAttributes() const noexcept { return m_vertexAttributes; }
-
-        //returns bit mask of sc_bitsPerAttribute, so if sc_bitsPerAttribute is 4 then
-        //return value is "1111 0000 0000 0000" in binary
-        [[nodiscard]] constexpr VertexAttributeBitMask GetVertexAttributeBitMask() const noexcept;
-        [[nodiscard]] size_t GetVertexAttributeIndex(VertexAttributeBits vertexAttribute) const noexcept;
-    };
-
     class Shader
     {
     public: //data types and constants related to data types
@@ -79,6 +35,15 @@ namespace OGLGAME
         };
         static constexpr uint8_t Feature_Count = Feature_EndOfEnum - 1;
 
+        enum VertexAttribute
+        {
+            VertexAttribute_none,
+            VertexAttribute_position,
+            VertexAttribute_texCoord,
+            VertexAttribute_EndOfEnum
+        };
+        static constexpr uint8_t VertexAttribute_Count = VertexAttribute_EndOfEnum - 1;
+
     public: //constants
         static constexpr ResourceIndex c_invalidResourceIndex = -1;
         static constexpr const char* c_featureUniformNames[Feature_EndOfEnum] =
@@ -94,9 +59,11 @@ namespace OGLGAME
         ResourceIndex m_resourceIndex = c_invalidResourceIndex;
 
         std::vector<Property> m_properties;
-        Feature m_features[Feature_Count] = { Feature_invalid };
-        GLint m_featureUniformLocations[Feature_Count] = { 0 };
-        VertexLayout m_vertexLayout;
+        Feature m_pFeatures[Feature_Count] = { Feature_invalid };
+        GLint m_pFeatureUniformLocations[Feature_Count] = { 0 };
+        //is terminated by "VertexAttribute_none"
+        VertexAttribute m_pVertexAttributes[VertexAttribute_Count] = { VertexAttribute_none };
+        GLsizei m_vertexStride = 0;
 
         //opengl handles
         GLuint m_vertexShader = 0;
@@ -124,7 +91,8 @@ namespace OGLGAME
         [[nodiscard]] const std::vector<Property>& GetProperties() const noexcept { return m_properties; }
         void GetFeatures(Feature* pOutFeatures, uint8_t pOutFeaturesMaxSize) const noexcept;
         void GetFeatureUniformLocations(GLint* pOutLocations, uint8_t outLocationsSize) const noexcept;
-        [[nodiscard]] const VertexLayout& GetVertexLayout() const noexcept { return m_vertexLayout; }
+        void GetVertexAttributes(VertexAttribute* pOutAttributes, uint8_t outAttributesSize) const noexcept;
+        [[nodiscard]] GLsizei GetVertexStride() const noexcept { return m_vertexStride; }
 
         [[nodiscard]] GLuint GetVertexShader() const noexcept { return m_vertexShader; }
         [[nodiscard]] GLuint GetFragmentShader() const noexcept { return m_fragmentShader; }

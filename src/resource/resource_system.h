@@ -34,9 +34,6 @@ namespace OGLGAME
                 return m_resourceIndex != c_invalidResourceIndex &&
                     m_resourceType != ResourceType_invalid;
             }
-
-        public: //operators
-            operator ResourceIndex() const noexcept { return m_resourceIndex; }
         };
 
     public: //constants

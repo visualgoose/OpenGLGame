@@ -30,12 +30,7 @@ namespace OGLGAME {
             if (!entrypathString.ends_with(".shader.json"))
                 continue;
 
-            if (!FS::MakePathRelativeToGamePath(entrypath))
-            {
-                g_log.Error("Shader file {} wasn't loaded, because the file wasn't inside the game path",
-                    entrypathString);
-                continue;
-            }
+            FS::MakePathRelativeToGamePath(entrypath);
 
             size_t index = m_shaders.size();
             m_shaders.emplace_back(entrypath, index);
@@ -54,12 +49,7 @@ namespace OGLGAME {
             if (!entrypathString.ends_with(".mat.json"))
                 continue;
 
-            if (!FS::MakePathRelativeToGamePath(entrypath))
-            {
-                g_log.Error("Material file {} wasn't loaded, because the file wasn't inside the game path",
-                    entrypathString);
-                continue;
-            }
+            FS::MakePathRelativeToGamePath(entrypath);
 
             size_t index = m_materials.size();
             m_materials.emplace_back(entrypath, index);

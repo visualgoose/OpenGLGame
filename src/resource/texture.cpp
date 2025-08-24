@@ -5,6 +5,8 @@
 #include "file_system.h"
 #include "logging.h"
 
+#include <debug/debug.h>
+
 namespace OGLGAME
 {
     Texture::Texture(std::filesystem::path path, const ResourceIndex resourceIndex) :

@@ -7,59 +7,6 @@
 
 namespace OGLGAME
 {
-    //OGLGAME::VertexLayout implementation
-
-    VertexLayout::VertexLayout(const VertexAttributeBits* pVertexAttributes) noexcept
-    {
-        uint8_t vertexAttributeCount = 0;
-        for (uint8_t i = 0;; i++)
-        {
-            if (i > (8 * sizeof(VertexAttributeBits)) / c_bitsPerAttribute)
-                break;
-            if (pVertexAttributes[i] == VertexAttributeBits_none)
-                break;
-            vertexAttributeCount++;
-        }
-        Init(pVertexAttributes, vertexAttributeCount);
-    }
-
-    VertexLayout::VertexLayout(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept
-    {
-        Init(pVertexAttributes, vertexAttributeCount);
-    }
-
-    void VertexLayout::Init(const VertexAttributeBits* pVertexAttributes, uint8_t vertexAttributeCount) noexcept
-    {
-        for (uint8_t i = 0; i < vertexAttributeCount; i++)
-        {
-            m_vertexAttributes |= (static_cast<VertexAttributes>(pVertexAttributes[i]) >> (i * c_bitsPerAttribute));
-        }
-    }
-
-    constexpr VertexLayout::VertexAttributeBitMask VertexLayout::GetVertexAttributeBitMask() const noexcept
-    {
-        VertexAttributeBitMask bitMask = 0;
-        for (size_t i = 0; i < c_bitsPerAttribute; i++)
-        {
-            bitMask |= 1 >> i;
-        }
-        return bitMask;
-    }
-
-    size_t VertexLayout::GetVertexAttributeIndex(VertexAttributeBits vertexAttribute) const noexcept
-    {
-        auto curAttributeBit = static_cast<VertexAttributeBits>(m_vertexAttributes);
-        for (size_t i = 0; i < 8 * sizeof(VertexAttributeBits) / c_bitsPerAttribute; i++)
-        {
-            if ((curAttributeBit & GetVertexAttributeBitMask()) == vertexAttribute)
-                return i;
-            curAttributeBit = static_cast<VertexAttributeBits>(curAttributeBit << c_bitsPerAttribute);
-        }
-        return -1;
-    }
-
-    //OGLGAME::Shader implementation
-
     NLOHMANN_JSON_SERIALIZE_ENUM(Shader::PropertyType,
         {
             {Shader::PropertyType_invalid, nullptr},
@@ -70,11 +17,11 @@ namespace OGLGAME
             {Shader::Feature_invalid, nullptr},
             {Shader::Feature_mvp, "oglgame_MVP"}
         })
-    NLOHMANN_JSON_SERIALIZE_ENUM(VertexLayout::VertexAttributeBits,
+    NLOHMANN_JSON_SERIALIZE_ENUM(Shader::VertexAttribute,
         {
-            {VertexLayout::VertexAttributeBits_none, nullptr},
-            {VertexLayout::VertexAttributeBits_position, "position"},
-            {VertexLayout::VertexAttributeBits_texCoord, "texCoord"}
+            {Shader::VertexAttribute_none, nullptr},
+            {Shader::VertexAttribute_position, "position"},
+            {Shader::VertexAttribute_texCoord, "texCoord"}
         })
 
     using json = nlohmann::json;
@@ -174,17 +121,30 @@ namespace OGLGAME
         }
 
         const json& shaderJSONVertexLayout = shaderJSONVertex["vertexLayout"];
-        if (shaderJSONVertexLayout.size() > VertexLayout::VertexAttributeBits_Count)
+        if (shaderJSONVertexLayout.size() > VertexAttribute_Count)
         {
             g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                 .NextLine("\"vertexLayout\" in \"vertex\" is either null or "
                     "its size is bigger than the count of all possible vertex attributes");
             return false;
         }
-        VertexLayout::VertexAttributeBits pVertexAttributes[VertexLayout::VertexAttributeBits_Count]
-            = { VertexLayout::VertexAttributeBits_none };
-        shaderJSONVertexLayout.get_to(pVertexAttributes);
-        m_vertexLayout = VertexLayout(pVertexAttributes);
+        shaderJSONVertexLayout.get_to(m_pVertexAttributes);
+        for (const VertexAttribute attribute : m_pVertexAttributes)
+        {
+            if (attribute == VertexAttribute_none)
+                break;
+            switch (attribute)
+            {
+                case VertexAttribute_position:
+                    m_vertexStride += 3 * sizeof(float);
+                    break;
+                case VertexAttribute_texCoord:
+                    m_vertexStride += 2 * sizeof(float);
+                    break;
+                default:
+                    break;
+            }
+        }
 
         const json& shaderJSONFragment = shaderJSON["fragment"];
         if (!shaderJSONFragment.is_object())
@@ -324,21 +284,21 @@ namespace OGLGAME
                 .NextLine("\"features\" is either null or its size is bigger than the count of all possible features");
             return false;
         }
-        shaderJSONFeatures.get_to(m_features);
+        shaderJSONFeatures.get_to(m_pFeatures);
         for (uint8_t i = 0; i < Feature_Count; i++)
         {
-            if (m_features[i] == Feature_invalid)
+            if (m_pFeatures[i] == Feature_invalid)
             {
                 g_log.Error("Failed to parse shader file \"{}\":", m_path.string())
                     .NextLine("Value at index \"{}\" in \"features\" isn't a valid feature", i);
                 return false;
             }
-            m_featureUniformLocations[i] = glGetUniformLocation(m_shaderProgram,
-                c_featureUniformNames[m_features[i]]);
-            if (m_featureUniformLocations[i] == -1)
+            m_pFeatureUniformLocations[i] = glGetUniformLocation(m_shaderProgram,
+                c_featureUniformNames[m_pFeatures[i]]);
+            if (m_pFeatureUniformLocations[i] == -1)
             {
                 g_log.Error("Failed to get uniform location \"{}\" for feature",
-                    c_featureUniformNames[m_features[i]]);
+                    c_featureUniformNames[m_pFeatures[i]]);
                 return false;
             }
         }
@@ -351,18 +311,29 @@ namespace OGLGAME
         {
             if (i == outFeaturesSize)
                 break;
-            pOutFeatures[i] = m_features[i];
+            pOutFeatures[i] = m_pFeatures[i];
         }
     }
 
     void Shader::GetFeatureUniformLocations(GLint* pOutLocations,
-        uint8_t outLocationsSize) const noexcept
+        const uint8_t outLocationsSize) const noexcept
     {
         for (uint8_t i = 0; i < Feature_Count; i++)
         {
             if (i == outLocationsSize)
                 break;
-            pOutLocations[i] = m_featureUniformLocations[i];
+            pOutLocations[i] = m_pFeatureUniformLocations[i];
         }
     }
+
+    void Shader::GetVertexAttributes(VertexAttribute *pOutAttributes, uint8_t outAttributesSize) const noexcept
+    {
+        for (uint8_t i = 0; i < VertexAttribute_Count; i++)
+        {
+            if (i == outAttributesSize)
+                break;
+            pOutAttributes[i] = m_pVertexAttributes[i];
+        }
+    }
+
 }

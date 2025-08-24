@@ -38,12 +38,11 @@ namespace OGLGAME
             aiMesh* pMesh = pScene->mMeshes[i];
 
             materialPath = m_path / pScene->mMaterials[pMesh->mMaterialIndex]->GetName().C_Str();
-            FS::MakePathRelativeToGamePath()
 
-            ResourceIndex materialIndex = resourceSystem.MaterialAddRef();
+            ResourceIndex materialIndex = resourceSystem.MaterialAddRef(materialPath);
             if (materialIndex == c_invalidResourceIndex)
             {
-                g_log.Warning("Failed to find material index for material \"{}\" for model \"{}\"", );
+                g_log.Warning(R"(Failed to find material index for material "{}" for model "{}")", materialPath.string(), m_path.string());
             }
 
             uint32_t indexCount = 3 * pMesh->mNumFaces;
@@ -73,16 +72,44 @@ namespace OGLGAME
             glGenVertexArrays(1, &outMesh.m_vao);
             glBindVertexArray(outMesh.m_vao);
 
-            GLuint buffers[2];
-            glGenBuffers(2, buffers);
-            glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
+            GLuint pBuffers[2];
+            glGenBuffers(2, pBuffers);
+            glBindBuffer(GL_ARRAY_BUFFER, pBuffers[0]);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pBuffers[1]);
 
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+            const ResourceIndex shaderIndex = resourceSystem.GetMaterial(materialIndex).GetShaderIndex();
+            const Shader& shader = resourceSystem.GetShader(shaderIndex);
+
+            Shader::VertexAttribute pVertexAttributes[Shader::VertexAttribute_Count] = { Shader::VertexAttribute_none };
+            shader.GetVertexAttributes(pVertexAttributes, Shader::VertexAttribute_Count);
+            GLsizei stride = shader.GetVertexStride();
+            uint8_t* vertexOffset = 0;
+            for (GLuint vertexAttrIdx = 0; vertexAttrIdx < Shader::VertexAttribute_Count; vertexAttrIdx++)
+            {
+                if (pVertexAttributes[vertexAttrIdx] == Shader::VertexAttribute_none)
+                    break;
+                switch (pVertexAttributes[vertexAttrIdx])
+                {
+                    case Shader::VertexAttribute_position:
+                        glVertexAttribPointer(vertexAttrIdx, 3, GL_FLOAT, GL_FALSE, stride, vertexOffset);
+                        vertexOffset += 3 * sizeof(float);
+                        break;
+                    case Shader::VertexAttribute_texCoord:
+                        glVertexAttribPointer(vertexAttrIdx, 2, GL_FLOAT, GL_FALSE, stride, vertexOffset);
+                        vertexOffset += 2 * sizeof(float);
+                        break;
+                    default:
+                        break;
+                }
+                glEnableVertexAttribArray(vertexAttrIdx);
+            }
+            glBindVertexArray(0);
         }
         m_valid = true;
-        m_refCount++;
+        m_refCount = 1;
     }
 
     void Model::AddRef() noexcept
@@ -103,24 +130,21 @@ namespace OGLGAME
 
     void Model::CleanUp() noexcept
     {
+        vgassert(!m_valid);
+
         m_valid = false;
         ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
         for (const auto& mesh : m_meshes)
         {
-            const GLuint buffers[2] =
+            const GLuint pBuffers[2] =
             {
                 mesh.m_vbo,
                 mesh.m_ebo
             };
-            glDeleteBuffers(2, buffers);
+            glDeleteBuffers(2, pBuffers);
             glDeleteVertexArrays(1, &mesh.m_vao);
             if (mesh.m_materialIndex != c_invalidResourceIndex)
                 resourceSystem.MaterialRelease(mesh.m_materialIndex);
-        }
-        if (m_meshes.size() > 8)
-        {
-            m_meshes.resize(0);
-            m_meshes.shrink_to_fit();
         }
     }
 

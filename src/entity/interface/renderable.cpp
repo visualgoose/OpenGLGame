@@ -15,6 +15,7 @@ namespace OGLGAME::Entities
             .GetTypeCache()
             .FindOrCreateType("irenderable");
     }
+
     TypeCache::CachedType Renderable::S_GetType()
     {
         return s_type;

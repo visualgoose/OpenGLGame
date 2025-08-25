@@ -107,7 +107,3 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(assimp)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
-
-#openal
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/openal/include")
-target_link_libraries(${PROJECT_NAME} PRIVATE "${EXTBIN_DIR}/OpenAL32.lib")

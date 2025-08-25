@@ -7,10 +7,8 @@ namespace OGLGAME
 {
     class TypeCache
     {
-    public: //data types
+    public: //data types and constants
         using CachedType = size_t;
-
-    public: //constants
         static constexpr CachedType c_invalidType = -1;
 
     private: //member variables

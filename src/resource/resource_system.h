@@ -12,8 +12,9 @@ namespace OGLGAME
 {
     class ResourceSystem
     {
-    public: //data types
+    public: //data types and constants
         using ResourceIndex = size_t;
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
         enum ResourceType : uint8_t
         {
             ResourceType_invalid,
@@ -25,7 +26,7 @@ namespace OGLGAME
         struct ResourceID
         {
         public: //member variables
-            ResourceIndex m_resourceIndex = -1;
+            ResourceIndex m_resourceIndex = c_invalidResourceIndex;
             ResourceType m_resourceType = ResourceType_invalid;
 
         public: //member functions
@@ -36,12 +37,11 @@ namespace OGLGAME
             }
         };
 
-    public: //constants
-        static constexpr ResourceIndex c_invalidResourceIndex = -1;
-
     private: //member variables
         std::unordered_map<std::filesystem::path, ResourceID> m_path2ResourceID;
+        size_t m_modelCount = 0;
         std::vector<Model> m_models;
+        size_t m_textureCount = 0;
         std::vector<Texture> m_textures;
         std::vector<Material> m_materials;
         std::vector<Shader> m_shaders;
@@ -60,13 +60,13 @@ namespace OGLGAME
         void ModelAddRef(ResourceIndex modelIndex) noexcept;
         ResourceIndex ModelAddRef(const std::filesystem::path& modelPath) noexcept;
 
-        void MaterialRelease(ResourceIndex modelIndex) noexcept;
-        void MaterialAddRef(ResourceIndex modelIndex) noexcept;
-        ResourceIndex MaterialAddRef(const std::filesystem::path& modelPath) noexcept;
+        void MaterialRelease(ResourceIndex materialIndex) noexcept;
+        void MaterialAddRef(ResourceIndex materialIndex) noexcept;
+        ResourceIndex MaterialAddRef(const std::filesystem::path& materialPath) noexcept;
 
-        void TextureRelease(ResourceIndex modelIndex) noexcept {}
-        void TextureAddRef(ResourceIndex modelIndex) noexcept {}
-        ResourceIndex TextureAddRef(const std::filesystem::path& modelPath) noexcept {}
+        void TextureRelease(ResourceIndex textureIndex) noexcept;
+        void TextureAddRef(ResourceIndex textureIndex) noexcept;
+        ResourceIndex TextureAddRef(const std::filesystem::path& texturePath) noexcept;
 
         ResourceID GetResourceID(const std::filesystem::path& filePath) const noexcept;
 

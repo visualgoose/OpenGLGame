@@ -9,8 +9,10 @@ namespace OGLGAME
 {
     class Material
     {
-    private: //data types
+    private: //data types and constants
         using ResourceIndex = size_t;
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
+
         struct PropertyValue
         {
         public: //member variables
@@ -31,9 +33,6 @@ namespace OGLGAME
             PropertyValue& operator=(const PropertyValue& other);
             PropertyValue& operator=(PropertyValue&& other) noexcept;
         };
-
-    public: //constants
-        static constexpr ResourceIndex c_invalidResourceIndex = -1;
 
     private: //member variables
         bool m_valid = false;

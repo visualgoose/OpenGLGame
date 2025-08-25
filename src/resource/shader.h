@@ -12,8 +12,10 @@ namespace OGLGAME
 {
     class Shader
     {
-    public: //data types and constants related to data types
+    public: //data types and constants
         using ResourceIndex = size_t;
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
+
         enum PropertyType : uint8_t
         {
             PropertyType_invalid,
@@ -27,6 +29,7 @@ namespace OGLGAME
             std::string m_id;
             std::string m_displayName;
         };
+
         enum Feature : uint8_t
         {
             Feature_invalid,
@@ -40,12 +43,13 @@ namespace OGLGAME
             VertexAttribute_none,
             VertexAttribute_position,
             VertexAttribute_texCoord,
+            VertexAttribute_normal,
+            VertexAttribute_boneIDs,
+            VertexAttribute_weight,
             VertexAttribute_EndOfEnum
         };
         static constexpr uint8_t VertexAttribute_Count = VertexAttribute_EndOfEnum - 1;
 
-    public: //constants
-        static constexpr ResourceIndex c_invalidResourceIndex = -1;
         static constexpr const char* c_featureUniformNames[Feature_EndOfEnum] =
         {
             "invalid",
@@ -63,7 +67,6 @@ namespace OGLGAME
         GLint m_pFeatureUniformLocations[Feature_Count] = { 0 };
         //is terminated by "VertexAttribute_none"
         VertexAttribute m_pVertexAttributes[VertexAttribute_Count] = { VertexAttribute_none };
-        GLsizei m_vertexStride = 0;
 
         //opengl handles
         GLuint m_vertexShader = 0;
@@ -92,7 +95,6 @@ namespace OGLGAME
         void GetFeatures(Feature* pOutFeatures, uint8_t pOutFeaturesMaxSize) const noexcept;
         void GetFeatureUniformLocations(GLint* pOutLocations, uint8_t outLocationsSize) const noexcept;
         void GetVertexAttributes(VertexAttribute* pOutAttributes, uint8_t outAttributesSize) const noexcept;
-        [[nodiscard]] GLsizei GetVertexStride() const noexcept { return m_vertexStride; }
 
         [[nodiscard]] GLuint GetVertexShader() const noexcept { return m_vertexShader; }
         [[nodiscard]] GLuint GetFragmentShader() const noexcept { return m_fragmentShader; }

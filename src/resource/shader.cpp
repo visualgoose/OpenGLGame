@@ -21,7 +21,10 @@ namespace OGLGAME
         {
             {Shader::VertexAttribute_none, nullptr},
             {Shader::VertexAttribute_position, "position"},
-            {Shader::VertexAttribute_texCoord, "texCoord"}
+            {Shader::VertexAttribute_texCoord, "texCoord"},
+            {Shader::VertexAttribute_normal, "normal"},
+            {Shader::VertexAttribute_boneIDs, "boneIDs"},
+            {Shader::VertexAttribute_weight, "weight"},
         })
 
     using json = nlohmann::json;
@@ -129,22 +132,6 @@ namespace OGLGAME
             return false;
         }
         shaderJSONVertexLayout.get_to(m_pVertexAttributes);
-        for (const VertexAttribute attribute : m_pVertexAttributes)
-        {
-            if (attribute == VertexAttribute_none)
-                break;
-            switch (attribute)
-            {
-                case VertexAttribute_position:
-                    m_vertexStride += 3 * sizeof(float);
-                    break;
-                case VertexAttribute_texCoord:
-                    m_vertexStride += 2 * sizeof(float);
-                    break;
-                default:
-                    break;
-            }
-        }
 
         const json& shaderJSONFragment = shaderJSON["fragment"];
         if (!shaderJSONFragment.is_object())

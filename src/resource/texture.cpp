@@ -9,10 +9,11 @@
 
 namespace OGLGAME
 {
-    Texture::Texture(std::filesystem::path path, const ResourceIndex resourceIndex) :
-        m_path(std::move(path)),
-        m_resourceIndex(resourceIndex)
+    void Texture::Load(std::filesystem::path path, const ResourceIndex resourceIndex)
     {
+        m_path = std::move(path);
+        m_resourceIndex = resourceIndex;
+
         GLenum glTextureFormat;
 
         SDL_Surface* texData = IMG_Load(m_path.string().c_str());
@@ -86,5 +87,13 @@ namespace OGLGAME
         vgassert(m_valid);
 
         m_refCount--;
+        if (m_refCount == 0)
+            CleanUp();
+    }
+
+    void Texture::CleanUp() noexcept
+    {
+        m_valid = false;
+        glDeleteTextures(1, &m_texture);
     }
 }

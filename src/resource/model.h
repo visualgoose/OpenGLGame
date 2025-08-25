@@ -3,19 +3,28 @@
 #include <filesystem>
 #include <vector>
 
+#include <glm/vec4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
+
 #include <glad/glad.h>
 
 namespace OGLGAME
 {
     class Model
     {
-    public: //data types
+    public: //data types and constants
+        using ResourceIndex = size_t;
+        static constexpr ResourceIndex c_invalidResourceIndex = -1;
+
         struct Vertex
         {
-            float x, y, z;
-            float u, v;
+            glm::vec3 m_position;
+            glm::vec2 m_texCoord;
+            glm::vec3 m_normal;
+            glm::ivec4 m_boneIDs;
+            glm::vec4 m_weights;
         };
-        using ResourceIndex = size_t;
         struct Mesh
         {
             ResourceIndex m_materialIndex = -1;
@@ -25,14 +34,11 @@ namespace OGLGAME
             uint32_t m_indexCount = 0;
         };
 
-    public: //constants
-        static constexpr ResourceIndex c_invalidResourceIndex = -1;
-
     private: //member variables
         bool m_valid = false;
         std::filesystem::path m_path;
         ResourceIndex m_resourceIndex = c_invalidResourceIndex;
-        size_t m_refCount = 1;
+        size_t m_refCount = 0;
         std::vector<Mesh> m_meshes;
 
     public: //constructors

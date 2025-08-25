@@ -8,10 +8,8 @@ namespace OGLGAME
 {
     class Scene
     {
-    public: //data types
+    public: //data types and constants
         using EntityID = size_t;
-
-    public: //constants
         static constexpr size_t c_invalidEntityID = -1;
 
     private: //member variables

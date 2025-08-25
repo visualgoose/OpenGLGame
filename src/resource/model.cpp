@@ -1,5 +1,9 @@
 #include "model.h"
 
+#include <glm/ext/as>
+
+#include <cstddef>
+
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
@@ -11,7 +15,7 @@
 
 namespace OGLGAME
 {
-    void Model::Load(std::filesystem::path path, ResourceIndex resourceIndex)
+    void Model::Load(std::filesystem::path path, const ResourceIndex resourceIndex)
     {
         vgassert(!m_valid);
 
@@ -53,8 +57,11 @@ namespace OGLGAME
             {
                 vertices[currentVertex] =
                 {
-                    pMesh->mVertices[currentVertex].x, pMesh->mVertices[currentVertex].y, pMesh->mVertices[currentVertex].z,
-                    pMesh->mTextureCoords[0][currentVertex].x, pMesh->mTextureCoords[0][currentVertex].y
+                    { pMesh->mVertices[currentVertex].x, pMesh->mVertices[currentVertex].y, pMesh->mVertices[currentVertex].z },
+                    { pMesh->mTextureCoords[0][currentVertex].x, pMesh->mTextureCoords[0][currentVertex].y },
+                    { pMesh->mNormals[currentVertex].x, pMesh->mNormals[currentVertex].y, pMesh->mNormals[currentVertex].z },
+                    { -1, -1, -1, -1 },
+                    { 0.0f, 0.0f, 0.0f, 0.0f }
                 };
             }
 
@@ -85,8 +92,6 @@ namespace OGLGAME
 
             Shader::VertexAttribute pVertexAttributes[Shader::VertexAttribute_Count] = { Shader::VertexAttribute_none };
             shader.GetVertexAttributes(pVertexAttributes, Shader::VertexAttribute_Count);
-            GLsizei stride = shader.GetVertexStride();
-            uint8_t* vertexOffset = 0;
             for (GLuint vertexAttrIdx = 0; vertexAttrIdx < Shader::VertexAttribute_Count; vertexAttrIdx++)
             {
                 if (pVertexAttributes[vertexAttrIdx] == Shader::VertexAttribute_none)
@@ -94,12 +99,24 @@ namespace OGLGAME
                 switch (pVertexAttributes[vertexAttrIdx])
                 {
                     case Shader::VertexAttribute_position:
-                        glVertexAttribPointer(vertexAttrIdx, 3, GL_FLOAT, GL_FALSE, stride, vertexOffset);
-                        vertexOffset += 3 * sizeof(float);
+                        glVertexAttribPointer(vertexAttrIdx, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                            reinterpret_cast<void*>(offsetof(Vertex, m_position)));
                         break;
                     case Shader::VertexAttribute_texCoord:
-                        glVertexAttribPointer(vertexAttrIdx, 2, GL_FLOAT, GL_FALSE, stride, vertexOffset);
-                        vertexOffset += 2 * sizeof(float);
+                        glVertexAttribPointer(vertexAttrIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                            reinterpret_cast<void*>(offsetof(Vertex, m_texCoord)));
+                        break;
+                    case Shader::VertexAttribute_normal:
+                        glVertexAttribPointer(vertexAttrIdx, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                            reinterpret_cast<void*>(offsetof(Vertex, m_normal)));
+                        break;
+                    case Shader::VertexAttribute_boneIDs:
+                        glVertexAttribPointer(vertexAttrIdx, 4, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex),
+                            reinterpret_cast<void*>(offsetof(Vertex, m_boneIDs)));
+                        break;
+                    case Shader::VertexAttribute_weight:
+                        glVertexAttribPointer(vertexAttrIdx, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                            reinterpret_cast<void*>(offsetof(Vertex, m_weights)));
                         break;
                     default:
                         break;

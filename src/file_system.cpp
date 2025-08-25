@@ -44,13 +44,13 @@ namespace OGLGAME::FS
         if (!file.is_open())
             return std::unexpected(FileOpenErrorCode_permissionDenied);
 
-        size_t fileSize = file.tellg();
+        const size_t fileSize = file.tellg();
         std::vector<uint8_t> fileData(fileSize);
 
         file.seekg(0); //set pointer to 0, so file reads properly
         if (!file.read(reinterpret_cast<char*>(fileData.data()), fileSize))
             return std::unexpected(FileOpenErrorCode_readFailure);
-        int x = __cplusplus
+
         file.close();
         return fileData;
     }

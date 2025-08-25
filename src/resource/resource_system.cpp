@@ -62,6 +62,131 @@ namespace OGLGAME {
         }
     }
 
+    void ResourceSystem::ModelRelease(ResourceIndex modelIndex) noexcept
+    {
+        vgassert(modelIndex < m_models.size());
+
+        m_models[modelIndex].Release();
+        if (!m_models[modelIndex].IsValid())
+            m_modelCount--;
+    }
+
+    void ResourceSystem::ModelAddRef(ResourceIndex modelIndex) noexcept
+    {
+        vgassert(modelIndex < m_models.size());
+
+        m_models[modelIndex].AddRef();
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::ModelAddRef(const std::filesystem::path& modelPath) noexcept
+    {
+        if(const auto modelIt = m_path2ResourceID.find(modelPath); modelIt != m_path2ResourceID.end())
+        {
+            vgassert(modelIt->second.m_resourceType == ResourceType_model);
+
+            const ResourceIndex modelIndex = modelIt->second.m_resourceIndex;
+            m_models[modelIndex].AddRef();
+            return modelIndex;
+        }
+
+        ResourceIndex modelIndex;
+        if (m_modelCount == m_models.size())
+        {
+            modelIndex = m_models.size();
+            m_models.resize(m_models.size() + 1);
+        }
+        else
+        {
+            for (modelIndex = 0; modelIndex < m_models.size(); modelIndex++)
+            {
+                if (!m_models[modelIndex].IsValid())
+                    break;
+            }
+        }
+        m_models[modelIndex].Load(modelPath, modelIndex);
+        if (!m_models[modelIndex].IsValid())
+            return c_invalidResourceIndex;
+        m_path2ResourceID[modelPath] = ResourceID(modelIndex, ResourceType_model);
+        m_modelCount++;
+        return modelIndex;
+    }
+
+    void ResourceSystem::MaterialRelease(const ResourceIndex materialIndex) noexcept
+    {
+        vgassert(materialIndex < m_materials.size());
+
+        m_materials[materialIndex].Release();
+    }
+
+    void ResourceSystem::MaterialAddRef(const ResourceIndex materialIndex) noexcept
+    {
+        vgassert(materialIndex < m_materials.size());
+
+        m_materials[materialIndex].AddRef();
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::MaterialAddRef(const std::filesystem::path& materialPath) noexcept
+    {
+        const auto materialIt = m_path2ResourceID.find(materialPath);
+        if (materialIt == m_path2ResourceID.end())
+            return c_invalidResourceIndex;
+
+        vgassert(materialIt->second.m_resourceType == ResourceType_material);
+
+        ResourceIndex materialIndex = materialIt->second.m_resourceIndex;
+        m_materials[materialIndex].AddRef();
+        return materialIndex;
+    }
+
+    void ResourceSystem::TextureRelease(const ResourceIndex textureIndex) noexcept
+    {
+        vgassert(textureIndex < m_textures.size());
+
+        m_textures[textureIndex].Release();
+        if (!m_textures[textureIndex].IsValid())
+            m_textureCount--;
+    }
+
+    void ResourceSystem::TextureAddRef(const ResourceIndex textureIndex) noexcept
+    {
+        vgassert(textureIndex < m_textures.size());
+
+        m_textures[textureIndex].AddRef();
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::TextureAddRef(const std::filesystem::path& texturePath) noexcept
+    {
+        if(const auto textureIt = m_path2ResourceID.find(texturePath); textureIt != m_path2ResourceID.end())
+        {
+            vgassert(textureIt->second.m_resourceType == ResourceType_texture);
+
+            const ResourceIndex textureIndex = textureIt->second.m_resourceIndex;
+            m_textures[textureIndex].AddRef();
+            return textureIndex;
+        }
+
+        ResourceIndex textureIndex;
+        if (m_textureCount == m_textures.size())
+        {
+            textureIndex = m_textures.size();
+            m_textures.resize(m_textures.size() + 1);
+        }
+        else
+        {
+            for (textureIndex = 0; textureIndex < m_textures.size(); textureIndex++)
+            {
+                if (!m_textures[textureIndex].IsValid())
+                    break;
+            }
+        }
+        m_textures[textureIndex].Load(texturePath, textureIndex);
+        if (!m_textures[textureIndex].IsValid())
+            return c_invalidResourceIndex;
+        m_path2ResourceID[texturePath] = ResourceID(textureIndex, ResourceType_texture);
+        m_textureCount++;
+        return textureIndex;
+    }
+
     ResourceSystem::ResourceID ResourceSystem::GetResourceID(const std::filesystem::path& filePath) const noexcept
     {
         const auto& resourceIDIt = m_path2ResourceID.find(filePath);
@@ -70,21 +195,21 @@ namespace OGLGAME {
         return resourceIDIt->second;
     }
 
-    const Model& ResourceSystem::GetModel(ResourceIndex modelIndex) const noexcept
+    const Model& ResourceSystem::GetModel(const ResourceIndex modelIndex) const noexcept
     {
         vgassert(m_models.size() > modelIndex);
 
         return m_models[modelIndex];
     }
 
-    const Texture& ResourceSystem::GetTexture(ResourceIndex textureIndex) const noexcept
+    const Texture& ResourceSystem::GetTexture(const ResourceIndex textureIndex) const noexcept
     {
         vgassert(m_textures.size() > textureIndex);
 
         return m_textures[textureIndex];
     }
 
-    const Material& ResourceSystem::GetMaterial(ResourceIndex materialIndex) const noexcept
+    const Material& ResourceSystem::GetMaterial(const ResourceIndex materialIndex) const noexcept
     {
         vgassert(m_materials.size() > materialIndex);
 

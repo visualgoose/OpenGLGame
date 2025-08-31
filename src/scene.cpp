@@ -2,95 +2,114 @@
 
 #include <vgassert.h>
 
+#include <ranges>
+
 namespace OGLGAME
 {
-    Scene::Scene(size_t baseEntityLimit) :
-        m_entityLimit(baseEntityLimit)
+    Scene::Scene(const size_t baseGameObjectLimit) :
+        m_gameObjectLimit(baseGameObjectLimit)
     {
-        m_ppEntities = new Entity*[baseEntityLimit];
-        for (size_t i = 0; i < baseEntityLimit; i++)
-            m_ppEntities[i] = nullptr;
+        m_pGameObjects = static_cast<GameObjectHolder*>(malloc(baseGameObjectLimit * sizeof(GameObjectHolder)));
+        for (size_t i = 0; i < baseGameObjectLimit; i++)
+            m_pGameObjects[i].m_allocated = false;
     }
+    
     Scene::~Scene()
     {
-        for (size_t i = 0; i < m_entityLimit; i++)
+        size_t freed = 0;
+        for (size_t i = 0; i < m_gameObjectLimit; i++)
         {
-            delete m_ppEntities[i];
+            if (freed == m_gameObjectCount)
+                break;
+            if (m_pGameObjects[i].m_allocated)
+            {
+                m_pGameObjects[i].m_gameObject.~GameObject();
+                freed++;
+            }
         }
-        delete[] m_ppEntities;
+        free(m_pGameObjects);
     }
 
-    Entity* Scene::SpawnEntityInternal(Entity* pEntity)
+    GameObject* Scene::AllocGameObject()
     {
-        size_t id = c_invalidEntityID;
-        if (m_entityCount == m_entityLimit)
+        GameObject::GameObjectID foundID = GameObject::c_invalidGOID;
+        if (m_gameObjectCount == m_gameObjectLimit)
         {
-            size_t oldEntityLimit = m_entityLimit;
-            m_entityLimit *= 2;
-            Entity** ppNewEntities = new Entity*[m_entityLimit];
-            for (size_t i = 0; i < oldEntityLimit; i++)
-                ppNewEntities[i] = m_ppEntities[i];
-            delete[] m_ppEntities;
-            m_ppEntities = ppNewEntities;
-            id = oldEntityLimit;
-        }
-        if (id == c_invalidEntityID)
-        {
-            for (size_t i = 0; i < m_entityLimit; i++)
+            const size_t newGameObjectLimit = 2 * m_gameObjectLimit;
+            auto* pNewGameObjects = static_cast<GameObjectHolder*>(
+                malloc(newGameObjectLimit * sizeof(GameObjectHolder)));
+            for (size_t i = 0; i < m_gameObjectLimit; i++)
             {
-                if (m_ppEntities[i] != nullptr)
-                    continue;
-                id = i;
-                break;
+                if (m_pGameObjects[i].m_allocated)
+                {
+                    pNewGameObjects[i].m_allocated = true;
+                    pNewGameObjects[i].m_gameObject = std::move(m_pGameObjects[i].m_gameObject);
+                }
+            }
+            for (size_t i = m_gameObjectLimit; i < newGameObjectLimit; i++)
+            {
+                pNewGameObjects[i].m_allocated = false;
+            }
+
+            foundID = m_gameObjectCount;
+
+            m_gameObjectCount = newGameObjectLimit;
+            free(m_pGameObjects);
+            m_pGameObjects = pNewGameObjects;
+        }
+        else
+        {
+            for (GameObject::GameObjectID i = 0; i < m_gameObjectLimit; i++)
+            {
+                if (!m_pGameObjects[i].m_allocated)
+                {
+                    foundID = i;
+                    break;
+                }
             }
         }
-        m_ppEntities[id] = pEntity;
-        pEntity->m_id = id;
-        m_entityCount++;
-        return pEntity;
-    }
-    void Scene::RemoveEntity(Entity* pEntity)
-    {
-        RemoveEntity(pEntity->m_id);
-    }
-    void Scene::RemoveEntity(size_t id)
-    {
-        vgassert(id < m_entityLimit);
-        Entity* entity = m_ppEntities[id];
-        vgassert(entity != nullptr);
-        delete entity;
-        m_ppEntities[id] = nullptr;
-        m_entityCount--;
+        m_pGameObjects[foundID].m_allocated = true;
+        auto* pGameObject = ::new(&m_pGameObjects[foundID].m_gameObject) GameObject();
+        pGameObject->m_id = foundID;
+        m_gameObjectCount++;
+        return pGameObject;
     }
 
-    void Scene::Tick(double deltaTime)
+    void Scene::Tick(const double deltaTime)
     {
-        size_t entitiesTicked = 0;
-        for (size_t i = 0; i < m_entityLimit; i++)
+        size_t gameObjectsTicked = 0; //better name than "framed"
+        for (size_t i = 0; i < m_gameObjectLimit; i++)
         {
-            if (entitiesTicked == m_entityCount)
+            if (gameObjectsTicked == m_gameObjectCount)
                 break;
-            Entity* entity = m_ppEntities[i];
-            if (entity != nullptr)
-            {
-                entity->Tick(deltaTime);
-                entitiesTicked++;
-            }
+            if (!m_pGameObjects[i].m_allocated)
+                continue;
+            GameObject* pGameObject = &m_pGameObjects[i].m_gameObject;
+            pGameObject->Tick(deltaTime);
+            gameObjectsTicked++;
         }
     }
-    void Scene::Frame(double deltaTime)
+
+    void Scene::Frame(const double deltaTime)
     {
-        size_t entitiesFrameTicked = 0;
-        for (size_t i = 0; i < m_entityLimit; i++)
+        size_t gameObjectsFrameTicked = 0; //better name than "framed"
+        for (size_t i = 0; i < m_gameObjectLimit; i++)
         {
-            if (entitiesFrameTicked == m_entityCount)
+            if (gameObjectsFrameTicked == m_gameObjectCount)
                 break;
-            Entity* entity = m_ppEntities[i];
-            if (entity != nullptr)
-            {
-                entity->Frame(deltaTime);
-                entitiesFrameTicked++;
-            }
+            if (!m_pGameObjects[i].m_allocated)
+                continue;
+            GameObject* pGameObject = &m_pGameObjects[i].m_gameObject;
+            pGameObject->Frame(deltaTime);
+            gameObjectsFrameTicked++;
         }
+    }
+
+    GameObject* Scene::GetGameObject(const GameObject::GameObjectID gameObjectID) const
+    {
+        vgassert(gameObjectID < m_gameObjectLimit);
+        vgassert(m_pGameObjects[gameObjectID].m_allocated);
+
+        return &m_pGameObjects[gameObjectID].m_gameObject;
     }
 }

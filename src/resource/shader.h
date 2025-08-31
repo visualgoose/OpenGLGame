@@ -20,8 +20,10 @@ namespace OGLGAME
         {
             PropertyType_invalid,
             PropertyType_tex2D,
-            PropertyType_Count
+            PropertyType_EndOfEnum
         };
+        static constexpr uint8_t PropertyType_Count = PropertyType_EndOfEnum - 1;
+
         struct Property
         {
             GLint m_uniformLocation = -1;
@@ -63,6 +65,7 @@ namespace OGLGAME
         ResourceIndex m_resourceIndex = c_invalidResourceIndex;
 
         std::vector<Property> m_properties;
+        size_t m_featureCount = 0;
         Feature m_pFeatures[Feature_Count] = { Feature_invalid };
         GLint m_pFeatureUniformLocations[Feature_Count] = { 0 };
         //is terminated by "VertexAttribute_none"
@@ -76,7 +79,7 @@ namespace OGLGAME
     public: //constructors and setup functions
         Shader() = default;
         Shader(std::filesystem::path filePath, ResourceIndex resourceIndex);
-        ~Shader() noexcept;
+        ~Shader();
 
     private:
         //also loads vertex layout
@@ -86,18 +89,19 @@ namespace OGLGAME
         bool LoadFeatures(const nlohmann::json& shaderJSON);
 
     public: //member functions
-        [[nodiscard]] bool IsValid() const noexcept { return m_valid; }
+        [[nodiscard]] bool IsValid() const { return m_valid; }
 
-        [[nodiscard]] const std::filesystem::path& GetPath() const noexcept { return m_path; }
-        [[nodiscard]] ResourceIndex GetIndex() const noexcept { return m_resourceIndex; }
+        [[nodiscard]] const std::filesystem::path& GetPath() const { return m_path; }
+        [[nodiscard]] ResourceIndex GetIndex() const { return m_resourceIndex; }
 
-        [[nodiscard]] const std::vector<Property>& GetProperties() const noexcept { return m_properties; }
-        void GetFeatures(Feature* pOutFeatures, uint8_t pOutFeaturesMaxSize) const noexcept;
-        void GetFeatureUniformLocations(GLint* pOutLocations, uint8_t outLocationsSize) const noexcept;
-        void GetVertexAttributes(VertexAttribute* pOutAttributes, uint8_t outAttributesSize) const noexcept;
+        [[nodiscard]] const std::vector<Property>& GetProperties() const { return m_properties; }
+        [[nodiscard]] size_t GetFeatureCount() const { return m_featureCount; }
+        void GetFeatures(Feature* pOutFeatures, uint8_t outFeaturesMaxSize) const;
+        void GetFeatureUniformLocations(GLint* pOutLocations, uint8_t outLocationsSize) const;
+        void GetVertexAttributes(VertexAttribute* pOutAttributes, uint8_t outAttributesSize) const;
 
-        [[nodiscard]] GLuint GetVertexShader() const noexcept { return m_vertexShader; }
-        [[nodiscard]] GLuint GetFragmentShader() const noexcept { return m_fragmentShader; }
-        [[nodiscard]] GLuint GetShaderProgram() const noexcept { return m_shaderProgram; }
+        [[nodiscard]] GLuint GetVertexShader() const { return m_vertexShader; }
+        [[nodiscard]] GLuint GetFragmentShader() const { return m_fragmentShader; }
+        [[nodiscard]] GLuint GetShaderProgram() const { return m_shaderProgram; }
     };
 }

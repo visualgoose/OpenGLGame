@@ -30,7 +30,7 @@ namespace OGLGAME
             ResourceType m_resourceType = ResourceType_invalid;
 
         public: //member functions
-            [[nodiscard]] bool IsValid() const noexcept
+            [[nodiscard]] bool IsValid() const
             {
                 return m_resourceIndex != c_invalidResourceIndex &&
                     m_resourceType != ResourceType_invalid;
@@ -56,24 +56,24 @@ namespace OGLGAME
         ResourceSystem& operator=(ResourceSystem&) = delete;
 
     public: //member functions
-        void ModelRelease(ResourceIndex modelIndex) noexcept;
-        void ModelAddRef(ResourceIndex modelIndex) noexcept;
-        ResourceIndex ModelAddRef(const std::filesystem::path& modelPath) noexcept;
+        void ModelRelease(ResourceIndex modelIndex);
+        void ModelAddRef(ResourceIndex modelIndex);
+        ResourceIndex ModelAddRef(const std::filesystem::path& modelPath);
 
-        void MaterialRelease(ResourceIndex materialIndex) noexcept;
-        void MaterialAddRef(ResourceIndex materialIndex) noexcept;
-        ResourceIndex MaterialAddRef(const std::filesystem::path& materialPath) noexcept;
+        void MaterialRelease(ResourceIndex materialIndex);
+        void MaterialAddRef(ResourceIndex materialIndex);
+        ResourceIndex MaterialAddRef(const std::filesystem::path& materialPath);
 
-        void TextureRelease(ResourceIndex textureIndex) noexcept;
-        void TextureAddRef(ResourceIndex textureIndex) noexcept;
-        ResourceIndex TextureAddRef(const std::filesystem::path& texturePath) noexcept;
+        void TextureRelease(ResourceIndex textureIndex);
+        void TextureAddRef(ResourceIndex textureIndex);
+        ResourceIndex TextureAddRef(const std::filesystem::path& texturePath);
 
-        ResourceID GetResourceID(const std::filesystem::path& filePath) const noexcept;
+        ResourceID GetResourceID(const std::filesystem::path& filePath) const;
 
-        const Model& GetModel(ResourceIndex modelIndex) const noexcept;
-        const Texture& GetTexture(ResourceIndex textureIndex) const noexcept;
-        const Material& GetMaterial(ResourceIndex materialIndex) const noexcept;
-        const Shader& GetShader(ResourceIndex shaderIndex) const noexcept;
+        const Model& GetModel(ResourceIndex modelIndex) const;
+        const Texture& GetTexture(ResourceIndex textureIndex) const;
+        const Material& GetMaterial(ResourceIndex materialIndex) const;
+        const Shader& GetShader(ResourceIndex shaderIndex) const;
 
 
     friend class Client;

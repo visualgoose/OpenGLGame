@@ -5,8 +5,6 @@
 #include "file_system.h"
 #include "logging.h"
 
-#include <debug/debug.h>
-
 namespace OGLGAME
 {
     void Texture::Load(std::filesystem::path path, const ResourceIndex resourceIndex)
@@ -55,7 +53,7 @@ namespace OGLGAME
         glBindTexture(GL_TEXTURE_2D, m_texture);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -75,14 +73,14 @@ namespace OGLGAME
         m_valid = true;
     }
 
-    void Texture::AddRef() noexcept
+    void Texture::AddRef()
     {
         vgassert(m_valid);
 
         m_refCount++;
     }
 
-    void Texture::Release() noexcept
+    void Texture::Release()
     {
         vgassert(m_valid);
 
@@ -91,7 +89,7 @@ namespace OGLGAME
             CleanUp();
     }
 
-    void Texture::CleanUp() noexcept
+    void Texture::CleanUp()
     {
         m_valid = false;
         glDeleteTextures(1, &m_texture);

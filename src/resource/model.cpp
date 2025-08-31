@@ -1,7 +1,5 @@
 #include "model.h"
 
-#include <glm/ext/as>
-
 #include <cstddef>
 
 #include <assimp/postprocess.h>
@@ -25,7 +23,7 @@ namespace OGLGAME
         m_resourceIndex = resourceIndex;
 
         Assimp::Importer importer;
-        const aiScene* pScene = importer.ReadFile(path.string(), aiProcess_Triangulate);
+        const aiScene* pScene = importer.ReadFile(m_path.string(), aiProcess_Triangulate);
         if (!pScene)
         {
             g_log.Error("Failed to open model \"{}\"", m_path.string());
@@ -37,16 +35,24 @@ namespace OGLGAME
 
         m_meshes.resize(pScene->mNumMeshes);
         std::filesystem::path materialPath;
+        std::filesystem::path materialAbsPath;
         for (uint32_t i = 0; i < pScene->mNumMeshes; i++)
         {
             aiMesh* pMesh = pScene->mMeshes[i];
 
-            materialPath = m_path / pScene->mMaterials[pMesh->mMaterialIndex]->GetName().C_Str();
+            const char* pMaterialPathAssimp = pScene->mMaterials[pMesh->mMaterialIndex]->GetName().C_Str();
+            materialAbsPath = m_path.parent_path() / pMaterialPathAssimp;
 
-            ResourceIndex materialIndex = resourceSystem.MaterialAddRef(materialPath);
+            ResourceIndex materialIndex = resourceSystem.MaterialAddRef(materialAbsPath);
             if (materialIndex == c_invalidResourceIndex)
             {
-                g_log.Warning(R"(Failed to find material index for material "{}" for model "{}")", materialPath.string(), m_path.string());
+                materialPath = pMaterialPathAssimp;
+                materialIndex = resourceSystem.MaterialAddRef(materialPath);
+            }
+            if (materialIndex == c_invalidResourceIndex)
+            {
+                g_log.Warning("Failed to find material \"{}\" or \"{}\" for model \"{}\"", materialAbsPath.string(),
+                    materialPath.string(), m_path.string());
             }
 
             uint32_t indexCount = 3 * pMesh->mNumFaces;
@@ -70,7 +76,7 @@ namespace OGLGAME
             {
                 for (uint32_t currentFaceIndex = 0; currentFaceIndex < 3; currentFaceIndex++)
                 {
-                    indices[currentIndexIndex] = pMesh->mFaces[currentFace].mIndices[currentIndexIndex];
+                    indices[currentIndexIndex] = pMesh->mFaces[currentFace].mIndices[currentFaceIndex];
                     currentIndexIndex++;
                 }
             }
@@ -83,6 +89,11 @@ namespace OGLGAME
             glGenBuffers(2, pBuffers);
             glBindBuffer(GL_ARRAY_BUFFER, pBuffers[0]);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pBuffers[1]);
+
+            outMesh.m_vbo = pBuffers[0];
+            outMesh.m_ebo = pBuffers[1];
+            outMesh.m_materialIndex = materialIndex;
+            outMesh.m_indexCount = indexCount;
 
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
@@ -129,14 +140,14 @@ namespace OGLGAME
         m_refCount = 1;
     }
 
-    void Model::AddRef() noexcept
+    void Model::AddRef()
     {
         vgassert(m_valid);
 
         m_refCount++;
     }
 
-    void Model::Release() noexcept
+    void Model::Release()
     {
         vgassert(m_valid);
 
@@ -145,9 +156,9 @@ namespace OGLGAME
             CleanUp();
     }
 
-    void Model::CleanUp() noexcept
+    void Model::CleanUp()
     {
-        vgassert(!m_valid);
+        vgassert(m_valid);
 
         m_valid = false;
         ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();

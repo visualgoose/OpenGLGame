@@ -15,7 +15,8 @@ namespace OGLGAME::FS
         FileOpenErrorCode_notFound,
         FileOpenErrorCode_permissionDenied,
         FileOpenErrorCode_notAFile,
-        FileOpenErrorCode_readFailure
+        FileOpenErrorCode_readFailure,
+        FileOpenErrorCode_notInGameDirectory,
     };
     struct FileOpenError
     {
@@ -23,15 +24,15 @@ namespace OGLGAME::FS
         FileOpenErrorCode m_errorCode = FileOpenErrorCode_unknown;
 
     public: //constructors
-        FileOpenError() noexcept = default;
-        FileOpenError(const FileOpenErrorCode errorCode) noexcept : m_errorCode(errorCode) {}
+        FileOpenError() = default;
+        FileOpenError(const FileOpenErrorCode errorCode) : m_errorCode(errorCode) {}
 
     public: //operators
-        operator FileOpenErrorCode() const noexcept { return m_errorCode; }
-        operator const char* () const noexcept { return GetName(); }
+        operator FileOpenErrorCode() const { return m_errorCode; }
+        operator const char* () const { return GetName(); }
 
     public: //member functions
-        [[nodiscard]] const char* GetName() const noexcept;
+        [[nodiscard]] const char* GetName() const;
     };
 
     std::expected<std::vector<uint8_t>, FileOpenError> ReadBinFile(const std::filesystem::path& filePath);

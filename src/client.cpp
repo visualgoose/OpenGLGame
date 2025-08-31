@@ -2,8 +2,9 @@
 
 #include "vgassert.h"
 
-#include "entity/interface/renderable.h"
-#include "entity/render_test.h"
+#include "components/model_filter.h"
+#include "components/player.h"
+#include "components/transform.h"
 
 namespace OGLGAME
 {
@@ -18,16 +19,19 @@ namespace OGLGAME
 
         m_resourceSystem.LoadShadersAndMaterials();
 
-        m_pPlayer = m_scene.SpawnEntity(new Entities::Player());
+        m_pPlayerObject = m_scene.AllocGameObject();
+        m_pPlayerObject->AddComponent<Components::Player>();
     }
 
     void Client::CacheInterfaces()
     {
-        Entities::Renderable::S_CacheType();
+
     }
+
     void Client::CacheTypes()
     {
-        Entities::Player::S_CacheType();
-        Entities::RenderTest::S_CacheType();
+        Components::Transform::RegisterType();
+        Components::ModelFilter::RegisterType();
+        Components::Player::RegisterType();
     }
 }

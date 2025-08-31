@@ -12,36 +12,47 @@ namespace OGLGAME
         m_interfaces.reserve(2);
     }
 
-    bool TypeHierarchy::HasInterface(const TypeCache::CachedType interfaceType) const noexcept
+    std::ptrdiff_t TypeHierarchy::GetInterfaceOffset(const TypeCache::TypeIndex interfaceType) const
     {
         vgassert(interfaceType != TypeCache::c_invalidType);
 
-        for (const auto& interface : m_interfaces)
+        for (const auto&[m_index, offset] : m_interfaces)
         {
-            if (interface == interfaceType)
-                return true;
+            if (m_index == interfaceType)
+                return offset;
         }
-        return false;
+        return c_invalidInterfaceOffset;
     }
-    bool TypeHierarchy::Is(const TypeHierarchy& other) const noexcept
+
+    bool TypeHierarchy::Is(const TypeHierarchy& other) const
     {
-        vgassert(!m_hierarchy.empty() && "Tried calling TypeHierarchy::Is on empty Entity");
-        vgassert(!other.m_hierarchy.empty() && "Tried calling TypeHierarchy::Is on empty Entity");
+        vgassert(!m_hierarchy.empty() && "Tried calling TypeHierarchy::Is on empty TypeHierarchy");
+        vgassert(!other.m_hierarchy.empty() && "Tried calling TypeHierarchy::Is on empty TypeHierarchy");
 
         if (m_hierarchy.size() < other.m_hierarchy.size())
             return false;
-        size_t bottomChildIndex = other.m_hierarchy.size() - 1;
+        const size_t bottomChildIndex = other.m_hierarchy.size() - 1;
         return m_hierarchy[bottomChildIndex] == other.m_hierarchy[bottomChildIndex];
     }
-    void TypeHierarchy::AddInterface(const TypeCache::CachedType interfaceType)
+
+    void TypeHierarchy::AddInterface(const TypeCache::TypeIndex interfaceType, const std::ptrdiff_t offset)
     {
         vgassert(interfaceType != TypeCache::c_invalidType);
-        m_interfaces.push_back(interfaceType);
+        m_interfaces.emplace_back(interfaceType, offset);
     }
+
     void TypeHierarchy::AddChild(const char* pChildName)
     {
-        m_hierarchy.push_back(Client::S_GetInstance()
+        m_hierarchy.emplace_back(Client::S_GetInstance()
             .GetTypeCache()
             .FindOrCreateType(pChildName));
+    }
+
+    bool TypeHierarchy::IsTop(const TypeHierarchy& other) const
+    {
+        vgassert(!m_hierarchy.empty() && "Tried calling TypeHierarchy::IsTop on empty TypeHierarchy");
+        vgassert(!other.m_hierarchy.empty() && "Tried calling TypeHierarchy::IsTop on empty TypeHierarchy");
+
+        return m_hierarchy[0] == other.m_hierarchy[0];
     }
 }

@@ -2,36 +2,39 @@
 
 #include <type_traits>
 
-#include "entity/entity.h"
+#include "ecs/game_object.h"
 
 namespace OGLGAME
 {
     class Scene
     {
-    public: //data types and constants
-        using EntityID = size_t;
-        static constexpr size_t c_invalidEntityID = -1;
+    public: //data types
+        struct GameObjectHolder
+        {
+            bool m_allocated = false;
+            GameObject m_gameObject;
+        };
 
     private: //member variables
-        size_t m_entityCount = 0;
-        size_t m_entityLimit = 0;
-        Entity** m_ppEntities = nullptr;
+        size_t m_gameObjectCount = 0;
+        size_t m_gameObjectLimit = 0;
+        GameObjectHolder* m_pGameObjects = nullptr;
 
     public: //constructors
-        explicit Scene(size_t baseEntityLimit = 128);
+        explicit Scene(size_t baseGameObjectLimit = 128);
         ~Scene();
 
-    private: //member variables
-        Entity* SpawnEntityInternal(Entity* pEntity);
     public:
-        template<class T> requires std::is_base_of_v<Entity, T>
-        T* SpawnEntity(T* pEntity) {
-            return reinterpret_cast<T*>(SpawnEntityInternal(reinterpret_cast<Entity*>(pEntity)));
-        }
-        void RemoveEntity(Entity* pEntity);
-        void RemoveEntity(size_t id);
+        GameObject* AllocGameObject();
+        void RemoveGameObject(GameObject* pGameObject, bool removeChildren);
+        void RemoveGameObject(size_t id, bool removeChildren);
 
         void Tick(double deltaTime);
         void Frame(double deltaTime);
+
+        [[nodiscard]] size_t GetGameObjectCount() const { return m_gameObjectCount; }
+        [[nodiscard]] size_t GetGameObjectLimit() const { return m_gameObjectLimit; }
+        [[nodiscard]] GameObjectHolder* GetGameObjects() const { return m_pGameObjects; }
+        [[nodiscard]] GameObject* GetGameObject(GameObject::GameObjectID gameObjectID) const;
     };
 }

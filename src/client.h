@@ -5,7 +5,8 @@ int main(int argCount, char** ppArgs);
 #include "type_cache.h"
 #include "scene.h"
 #include "resource/resource_system.h"
-#include "entity/player.h"
+#include "input_system.h"
+#include "renderer.h"
 
 namespace OGLGAME
 {
@@ -15,13 +16,16 @@ namespace OGLGAME
         static Client* s_pInstance;
 
     public: //static functions
-        static Client& S_GetInstance() noexcept { return *s_pInstance; }
+        static Client& S_GetInstance() { return *s_pInstance; }
 
     private: //member variables
         TypeCache m_typeCache;
-        Scene m_scene;
         ResourceSystem m_resourceSystem;
-        Entities::Player* m_pPlayer = nullptr;
+        Scene m_scene;
+        InputSystem m_inputSystem;
+        Renderer m_renderer;
+
+        GameObject* m_pPlayerObject = nullptr;
 
     private: //constructors
         Client();
@@ -32,11 +36,14 @@ namespace OGLGAME
         Client& operator=(Client&) = delete;
 
     public: //member functions
-        TypeCache& GetTypeCache() noexcept { return m_typeCache; }
-        Scene& GetScene() noexcept { return m_scene; }
-        ResourceSystem& GetResourceSystem() noexcept { return m_resourceSystem; }
+        TypeCache& GetTypeCache() { return m_typeCache; }
+        Scene& GetScene() { return m_scene; }
+        ResourceSystem& GetResourceSystem() { return m_resourceSystem; }
+        InputSystem& GetInputSystem() { return m_inputSystem; }
+        Renderer& GetRenderer() { return m_renderer; }
 
-        Entities::Player* GetPlayer() const noexcept { return m_pPlayer; }
+        GameObject* GetPlayerObject() const { return m_pPlayerObject; }
+
     private:
         void CacheInterfaces();
         void CacheTypes();

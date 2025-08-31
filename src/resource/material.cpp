@@ -14,74 +14,13 @@ namespace OGLGAME
 {
     Material::PropertyValue::PropertyValue(std::string texturePath)
         : m_type(Shader::PropertyType_tex2D),
-        m_texturePath(std::move(texturePath)) { }
-    Material::PropertyValue::PropertyValue(const PropertyValue& other)
-    {
-        m_type = other.m_type;
-        switch (other.m_type)
-        {
-            case Shader::PropertyType_tex2D:
-                m_texturePath = other.m_texturePath;
-                break;
-            default:
-                break;
-        }
-    }
-    Material::PropertyValue::PropertyValue(PropertyValue&& other) noexcept
-    {
-        m_type = other.m_type;
-        switch (other.m_type)
-        {
-            case Shader::PropertyType_tex2D:
-                m_texturePath = std::move(other.m_texturePath);
-                break;
-            default:
-                break;
-        }
-    }
-    Material::PropertyValue::~PropertyValue() noexcept
-    {
-        switch (m_type)
-        {
-            case Shader::PropertyType_tex2D:
-                m_texturePath.~basic_string();
-                break;
-            default:
-                break;
-        }
-    }
-    Material::PropertyValue& Material::PropertyValue::operator=(const PropertyValue& other)
-    {
-        m_type = other.m_type;
-        switch (other.m_type)
-        {
-            case Shader::PropertyType_tex2D:
-                m_texturePath = other.m_texturePath;
-                break;
-            default:
-                break;
-        }
-        return *this;
-    }
-    Material::PropertyValue& Material::PropertyValue::operator=(PropertyValue&& other) noexcept
-    {
-        m_type = other.m_type;
-        switch (other.m_type)
-        {
-            case Shader::PropertyType_tex2D:
-                m_texturePath = std::move(other.m_texturePath);
-                break;
-            default:
-                break;
-        }
-        return *this;
-    }
+        m_value(std::move(texturePath)) { }
 
     Material::Material(std::filesystem::path filePath, ResourceIndex resourceIndex) :
         m_path(std::move(filePath)),
         m_resourceIndex(resourceIndex)
     {
-        auto fileData = FS::ReadTxtFile(filePath);
+        auto fileData = FS::ReadTxtFile(m_path);
         if (!fileData)
         {
             g_log.Error("Failed to open material file \"{}\" with following error:", m_path.string())
@@ -106,26 +45,33 @@ namespace OGLGAME
 
         std::string shaderPathStr;
         shaderPathJSON.get_to(shaderPathStr);
-        std::filesystem::path shaderPath = shaderPathStr;
-        FS::MakePathRelativeToGamePath(shaderPath);
-        shaderPathStr = shaderPath.string();
+        std::filesystem::path shaderAbsPath = m_path.parent_path() / shaderPathStr;
 
         const ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-        ResourceSystem::ResourceID shaderID = resourceSystem.GetResourceID(shaderPath);
+        ResourceSystem::ResourceID shaderID = resourceSystem.GetResourceID(shaderAbsPath);
         m_shaderIndex = shaderID.m_resourceIndex;
         if (m_shaderIndex == ResourceSystem::c_invalidResourceIndex ||
             shaderID.m_resourceType != ResourceSystem::ResourceType_shader)
         {
+            std::filesystem::path shaderPath = shaderPathStr;
+            shaderID = resourceSystem.GetResourceID(shaderPath);
+            m_shaderIndex = shaderID.m_resourceIndex;
+        }
+
+        if (m_shaderIndex == ResourceSystem::c_invalidResourceIndex ||
+            shaderID.m_resourceType != ResourceSystem::ResourceType_shader)
+        {
             g_log.Error("Failed to load material file \"{}\":", m_path.string())
-                .NextLine("Could not find ResourceID for shader path \"{}\" or resource type wasn't shader",
-                    shaderPathStr);
+                .NextLine("Could not find ResourceID for shader path \"{}\" or \"{}\" or the path pointed to a non shader file",
+                    shaderAbsPath.string(), shaderPathStr);
             return;
         }
+
         const Shader& shader = resourceSystem.GetShader(m_shaderIndex);
         const std::vector<Shader::Property> shaderProperties = shader.GetProperties();
 
         const json& propertyValuesJSON = materialJSON["properties"];
-        m_propertyValues.reserve(propertyValuesJSON.size());
+        m_propertyValues.resize(propertyValuesJSON.size());
         for (const auto& propertyValueJSON : propertyValuesJSON.items())
         {
             size_t foundIndex = -1;
@@ -143,17 +89,22 @@ namespace OGLGAME
             }
             std::string propertyValueString;
             propertyValueJSON.value().get_to(propertyValueString);
-            m_propertyValues[foundIndex] = PropertyValue(propertyValueString);
+            m_propertyValues[foundIndex] = PropertyValue(std::move(propertyValueString));
         }
-
         m_valid = true;
     }
 
-    void Material::AddRef() const noexcept
+    void Material::AddRef()
     {
-        vgassert(m_valid);
-
-        for (const auto& propertyValue : m_propertyValues)
+        //variables have to be here, because of some switch statement limitations
+        uint32_t uint;
+        bool boolean;
+        std::filesystem::path path;
+        std::filesystem::path path2;
+        std::string string;
+        ResourceSystem& resourceSystem = Client::S_GetInstance()
+                            .GetResourceSystem();
+        for (auto& propertyValue : m_propertyValues)
         {
             switch (propertyValue.m_type)
             {
@@ -163,9 +114,33 @@ namespace OGLGAME
                             .GetResourceSystem()
                             .TextureAddRef(propertyValue.m_resourceIndex);
                     else
-                        Client::S_GetInstance()
-                            .GetResourceSystem()
-                            .TextureAddRef(propertyValue.m_texturePath);
+                    {
+                        string = std::get<std::string>(propertyValue.m_value); //get tex2D path
+                        path = m_path.parent_path() / string; //path relative to material path
+                        uint = 0; //the first path might be valid
+                        boolean = FS::MakePathRelativeToGamePath(path) && std::filesystem::is_regular_file(path); //path relative to game path
+                        if (!boolean) //path relative to material was invalid
+                        {
+                            uint = 1; //second path might be valid
+                            path2 = string;
+                            boolean = FS::MakePathRelativeToGamePath(path2) && std::filesystem::is_regular_file(path2);
+                        }
+                        if (!boolean) //both paths were invalid
+                        {
+                            g_log.Error("Failed to find texture \"{}\" or \"{}\" for material \"{}\"",
+                                path.string(), string, m_path.string())
+                                .NextLine("Note: All resource files have to be in the game directory");
+                        }
+                        else
+                        {
+                            ResourceIndex textureIndex;
+                            if (uint == 0)
+                                textureIndex = resourceSystem.TextureAddRef(path);
+                            else
+                                textureIndex = resourceSystem.TextureAddRef(path2);
+                            propertyValue.m_resourceIndex = textureIndex;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -173,10 +148,8 @@ namespace OGLGAME
         }
     }
 
-    void Material::Release() const noexcept
+    void Material::Release()
     {
-        vgassert(m_valid);
-
         for (const auto& propertyValue : m_propertyValues)
         {
             switch (propertyValue.m_type)

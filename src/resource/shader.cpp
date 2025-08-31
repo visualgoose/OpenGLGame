@@ -33,7 +33,7 @@ namespace OGLGAME
         m_path(std::move(filePath)),
         m_resourceIndex(resourceIndex)
     {
-        auto fileData = FS::ReadTxtFile(filePath);
+        auto fileData = FS::ReadTxtFile(m_path);
         if (!fileData)
         {
             g_log.Error("Failed to open shader file \"{}\" with following error:", m_path.string())
@@ -60,7 +60,7 @@ namespace OGLGAME
         m_valid = true;
     }
 
-    Shader::~Shader() noexcept
+    Shader::~Shader()
     {
         glDeleteProgram(m_shaderProgram);
         glDeleteShader(m_vertexShader);
@@ -88,20 +88,33 @@ namespace OGLGAME
         shaderJSONVertexPath.get_to(shaderSrcPathStr);
 
         std::filesystem::path shaderSrcPath = m_path.parent_path() / shaderSrcPathStr;
+        std::filesystem::path shaderSrcPath2;
         shaderSrcPathStr = shaderSrcPath.string();
-        if (!FS::MakePathRelativeToGamePath(shaderSrcPath))
+
+        std::expected<std::string, FS::FileOpenError> shaderSource;
+        if (FS::MakePathRelativeToGamePath(shaderSrcPath))
+        {
+            shaderSource = FS::ReadTxtFile(shaderSrcPath);
+        }
+        else
+            shaderSource = std::unexpected(FS::FileOpenErrorCode_notInGameDirectory);
+
+        std::expected<std::string, FS::FileOpenError> shaderSource2 = std::move(shaderSource.or_else(
+            [&](const FS::FileOpenError& error) -> std::expected<std::string, FS::FileOpenError>
+            {
+                if (FS::MakePathRelativeToGamePath(shaderSrcPath2))
+                    return FS::ReadTxtFile(shaderSrcPath2);
+                return std::unexpected(FS::FileOpenErrorCode_notInGameDirectory);
+            }));
+        if (!shaderSource2)
         {
             g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("Vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
+                .NextLine("failed to open both relative and non relative vertex shader source file paths")
+                .NextLine("{}: {}", shaderSrcPathStr, shaderSource.error().GetName())
+                .NextLine("{}: {}", shaderSrcPath2.string(), shaderSource2.error().GetName());
             return false;
         }
-        std::expected<std::string, FS::FileOpenError> shaderSource = FS::ReadTxtFile(shaderSrcPath);
-        if (!shaderSource)
-        {
-            g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("Failed to read vertex shader source with error {}", shaderSource.error().GetName());
-            return false;
-        }
+
         const GLchar* pShaderSource = (*shaderSource).c_str();
         GLint shaderSourceLen = static_cast<GLint>((*shaderSource).size());
 
@@ -131,7 +144,10 @@ namespace OGLGAME
                     "its size is bigger than the count of all possible vertex attributes");
             return false;
         }
-        shaderJSONVertexLayout.get_to(m_pVertexAttributes);
+        for (size_t i = 0; i < shaderJSONVertexLayout.size(); i++)
+        {
+            shaderJSONVertexLayout[i].get_to(m_pVertexAttributes[i]);
+        }
 
         const json& shaderJSONFragment = shaderJSON["fragment"];
         if (!shaderJSONFragment.is_object())
@@ -151,17 +167,27 @@ namespace OGLGAME
 
         shaderSrcPath = m_path.parent_path() / shaderSrcPathStr;
         shaderSrcPathStr = shaderSrcPath.string();
-        if (!FS::MakePathRelativeToGamePath(shaderSrcPath))
+
+        if (FS::MakePathRelativeToGamePath(shaderSrcPath))
         {
-            g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("Vertex shader path \"{}\" isn't in the game directory", shaderSrcPathStr);
-            return false;
+            shaderSource = FS::ReadTxtFile(shaderSrcPath);
         }
-        shaderSource = FS::ReadTxtFile(shaderSrcPath);
-        if (!shaderSource)
+        else
+            shaderSource = std::unexpected(FS::FileOpenErrorCode_notInGameDirectory);
+
+        shaderSource2 = std::move(shaderSource.or_else(
+            [&](const FS::FileOpenError& error) -> std::expected<std::string, FS::FileOpenError>
+            {
+                if (FS::MakePathRelativeToGamePath(shaderSrcPath2))
+                    return FS::ReadTxtFile(shaderSrcPath2);
+                return std::unexpected(FS::FileOpenErrorCode_notInGameDirectory);
+            }));
+        if (!shaderSource2)
         {
             g_log.Error("Failed to load shader file \"{}\":", m_path.string())
-                .NextLine("Failed to read vertex shader source with error {}", shaderSource.error().GetName());
+                .NextLine("failed to open both relative and non relative fragment shader source file paths")
+                .NextLine("{}: {}", shaderSrcPathStr, shaderSource.error().GetName())
+                .NextLine("{}: {}", shaderSrcPath2.string(), shaderSource2.error().GetName());
             return false;
         }
         pShaderSource = (*shaderSource).c_str();
@@ -271,7 +297,10 @@ namespace OGLGAME
                 .NextLine("\"features\" is either null or its size is bigger than the count of all possible features");
             return false;
         }
-        shaderJSONFeatures.get_to(m_pFeatures);
+
+        m_featureCount = shaderJSONFeatures.size();
+        for (size_t i = 0; i < m_featureCount; i++)
+            shaderJSONFeatures[i].get_to(m_pFeatures[i]);
         for (uint8_t i = 0; i < Feature_Count; i++)
         {
             if (m_pFeatures[i] == Feature_invalid)
@@ -292,7 +321,7 @@ namespace OGLGAME
         return true;
     }
 
-    void Shader::GetFeatures(Feature* pOutFeatures, uint8_t outFeaturesSize) const noexcept
+    void Shader::GetFeatures(Feature* pOutFeatures, const uint8_t outFeaturesSize) const
     {
         for (uint8_t i = 0; i < Feature_Count; i++)
         {
@@ -303,7 +332,7 @@ namespace OGLGAME
     }
 
     void Shader::GetFeatureUniformLocations(GLint* pOutLocations,
-        const uint8_t outLocationsSize) const noexcept
+        const uint8_t outLocationsSize) const
     {
         for (uint8_t i = 0; i < Feature_Count; i++)
         {
@@ -313,7 +342,7 @@ namespace OGLGAME
         }
     }
 
-    void Shader::GetVertexAttributes(VertexAttribute *pOutAttributes, uint8_t outAttributesSize) const noexcept
+    void Shader::GetVertexAttributes(VertexAttribute *pOutAttributes, const uint8_t outAttributesSize) const
     {
         for (uint8_t i = 0; i < VertexAttribute_Count; i++)
         {

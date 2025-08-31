@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <variant>
+
 #include "shader.h"
 
 namespace OGLGAME
@@ -13,25 +15,17 @@ namespace OGLGAME
         using ResourceIndex = size_t;
         static constexpr ResourceIndex c_invalidResourceIndex = -1;
 
+    public:
         struct PropertyValue
         {
         public: //member variables
-            Shader::PropertyType m_type;
+            Shader::PropertyType m_type = Shader::PropertyType_invalid;
             ResourceIndex m_resourceIndex = -1; //for values that are a resource
-            union
-            {
-                std::string m_texturePath;
-            };
+            std::variant<std::string> m_value;
 
         public: //constructors
+            PropertyValue() = default;
             explicit PropertyValue(std::string texturePath);
-            PropertyValue(const PropertyValue& other);
-            PropertyValue(PropertyValue&& other) noexcept;
-            ~PropertyValue() noexcept;
-
-        public: //operators
-            PropertyValue& operator=(const PropertyValue& other);
-            PropertyValue& operator=(PropertyValue&& other) noexcept;
         };
 
     private: //member variables
@@ -47,13 +41,13 @@ namespace OGLGAME
         Material(std::filesystem::path filePath, ResourceIndex resourceIndex);
 
     public: //member functions
-        void AddRef() const noexcept;
-        void Release() const noexcept;
+        void AddRef();
+        void Release();
 
-        [[nodiscard]] bool IsValid() const noexcept { return m_valid; }
-        [[nodiscard]] ResourceIndex GetResourceIndex() const noexcept { return m_resourceIndex; }
-        [[nodiscard]] const std::filesystem::path& GetPath() const noexcept { return m_path; }
-        [[nodiscard]] ResourceIndex GetShaderIndex() const noexcept { return m_resourceIndex; }
-        [[nodiscard]] const std::vector<PropertyValue>& GetProperties() const noexcept { return m_propertyValues; }
+        [[nodiscard]] bool IsValid() const { return m_valid; }
+        [[nodiscard]] ResourceIndex GetResourceIndex() const { return m_resourceIndex; }
+        [[nodiscard]] const std::filesystem::path& GetPath() const { return m_path; }
+        [[nodiscard]] ResourceIndex GetShaderIndex() const { return m_resourceIndex; }
+        [[nodiscard]] const std::vector<PropertyValue>& GetProperties() const { return m_propertyValues; }
     };
 }

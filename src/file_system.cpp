@@ -15,20 +15,22 @@ namespace fs = std::filesystem;
 
 namespace OGLGAME::FS
 {
-    const char* FileOpenError::GetName() const noexcept
+    const char* FileOpenError::GetName() const
     {
         switch (m_errorCode)
         {
-        case FileOpenErrorCode_notFound:
-            return "FileOpenErrorCode_notFound";
-        case FileOpenErrorCode_permissionDenied:
-            return "FileOpenErrorCode_permissionDenied";
-        case FileOpenErrorCode_notAFile:
-            return "FileOpenErrorCode_notAFile";
-        case FileOpenErrorCode_readFailure:
-            return "FileOpenErrorCode_readFailure";
-        default:
-            return "FileOpenErrorCode_unknown";
+            case FileOpenErrorCode_notFound:
+                return "FileOpenErrorCode_notFound";
+            case FileOpenErrorCode_permissionDenied:
+                return "FileOpenErrorCode_permissionDenied";
+            case FileOpenErrorCode_notAFile:
+                return "FileOpenErrorCode_notAFile";
+            case FileOpenErrorCode_readFailure:
+                return "FileOpenErrorCode_readFailure";
+            case FileOpenErrorCode_notInGameDirectory:
+                return "FileOpenErrorCode_notInGameDirectory";
+            default:
+                return "FileOpenErrorCode_unknown";
         }
     }
 

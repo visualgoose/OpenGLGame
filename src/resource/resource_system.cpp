@@ -62,7 +62,7 @@ namespace OGLGAME {
         }
     }
 
-    void ResourceSystem::ModelRelease(ResourceIndex modelIndex) noexcept
+    void ResourceSystem::ModelRelease(ResourceIndex modelIndex)
     {
         vgassert(modelIndex < m_models.size());
 
@@ -71,14 +71,14 @@ namespace OGLGAME {
             m_modelCount--;
     }
 
-    void ResourceSystem::ModelAddRef(ResourceIndex modelIndex) noexcept
+    void ResourceSystem::ModelAddRef(ResourceIndex modelIndex)
     {
         vgassert(modelIndex < m_models.size());
 
         m_models[modelIndex].AddRef();
     }
 
-    ResourceSystem::ResourceIndex ResourceSystem::ModelAddRef(const std::filesystem::path& modelPath) noexcept
+    ResourceSystem::ResourceIndex ResourceSystem::ModelAddRef(const std::filesystem::path& modelPath)
     {
         if(const auto modelIt = m_path2ResourceID.find(modelPath); modelIt != m_path2ResourceID.end())
         {
@@ -111,21 +111,21 @@ namespace OGLGAME {
         return modelIndex;
     }
 
-    void ResourceSystem::MaterialRelease(const ResourceIndex materialIndex) noexcept
+    void ResourceSystem::MaterialRelease(const ResourceIndex materialIndex)
     {
         vgassert(materialIndex < m_materials.size());
 
         m_materials[materialIndex].Release();
     }
 
-    void ResourceSystem::MaterialAddRef(const ResourceIndex materialIndex) noexcept
+    void ResourceSystem::MaterialAddRef(const ResourceIndex materialIndex)
     {
         vgassert(materialIndex < m_materials.size());
 
         m_materials[materialIndex].AddRef();
     }
 
-    ResourceSystem::ResourceIndex ResourceSystem::MaterialAddRef(const std::filesystem::path& materialPath) noexcept
+    ResourceSystem::ResourceIndex ResourceSystem::MaterialAddRef(const std::filesystem::path& materialPath)
     {
         const auto materialIt = m_path2ResourceID.find(materialPath);
         if (materialIt == m_path2ResourceID.end())
@@ -138,7 +138,7 @@ namespace OGLGAME {
         return materialIndex;
     }
 
-    void ResourceSystem::TextureRelease(const ResourceIndex textureIndex) noexcept
+    void ResourceSystem::TextureRelease(const ResourceIndex textureIndex)
     {
         vgassert(textureIndex < m_textures.size());
 
@@ -147,14 +147,14 @@ namespace OGLGAME {
             m_textureCount--;
     }
 
-    void ResourceSystem::TextureAddRef(const ResourceIndex textureIndex) noexcept
+    void ResourceSystem::TextureAddRef(const ResourceIndex textureIndex)
     {
         vgassert(textureIndex < m_textures.size());
 
         m_textures[textureIndex].AddRef();
     }
 
-    ResourceSystem::ResourceIndex ResourceSystem::TextureAddRef(const std::filesystem::path& texturePath) noexcept
+    ResourceSystem::ResourceIndex ResourceSystem::TextureAddRef(const std::filesystem::path& texturePath)
     {
         if(const auto textureIt = m_path2ResourceID.find(texturePath); textureIt != m_path2ResourceID.end())
         {
@@ -187,7 +187,7 @@ namespace OGLGAME {
         return textureIndex;
     }
 
-    ResourceSystem::ResourceID ResourceSystem::GetResourceID(const std::filesystem::path& filePath) const noexcept
+    ResourceSystem::ResourceID ResourceSystem::GetResourceID(const std::filesystem::path& filePath) const
     {
         const auto& resourceIDIt = m_path2ResourceID.find(filePath);
         if (resourceIDIt == m_path2ResourceID.end())
@@ -195,28 +195,28 @@ namespace OGLGAME {
         return resourceIDIt->second;
     }
 
-    const Model& ResourceSystem::GetModel(const ResourceIndex modelIndex) const noexcept
+    const Model& ResourceSystem::GetModel(const ResourceIndex modelIndex) const
     {
         vgassert(m_models.size() > modelIndex);
 
         return m_models[modelIndex];
     }
 
-    const Texture& ResourceSystem::GetTexture(const ResourceIndex textureIndex) const noexcept
+    const Texture& ResourceSystem::GetTexture(const ResourceIndex textureIndex) const
     {
         vgassert(m_textures.size() > textureIndex);
 
         return m_textures[textureIndex];
     }
 
-    const Material& ResourceSystem::GetMaterial(const ResourceIndex materialIndex) const noexcept
+    const Material& ResourceSystem::GetMaterial(const ResourceIndex materialIndex) const
     {
         vgassert(m_materials.size() > materialIndex);
 
         return m_materials[materialIndex];
     }
 
-    const Shader& ResourceSystem::GetShader(const ResourceIndex shaderIndex) const noexcept
+    const Shader& ResourceSystem::GetShader(const ResourceIndex shaderIndex) const
     {
         vgassert(m_shaders.size() > shaderIndex);
 

@@ -11,6 +11,10 @@ namespace OGLGAME
         using TypeIndex = size_t;
         static constexpr TypeIndex c_invalidType = -1;
 
+    public: //static functions
+        static TypeIndex FindType(const char* pTypeName);
+        static TypeIndex FindOrCreateType(const char* pTypeName);
+
     private: //member variables
         std::vector<std::string> m_types;
     public:
@@ -18,7 +22,7 @@ namespace OGLGAME
         TypeCache(const TypeCache&) = delete;
         TypeCache& operator=(const TypeCache&) = delete;
 
-        TypeIndex FindType(const char* pTypeName) const;
-        TypeIndex FindOrCreateType(const char* pTypeName);
+        TypeIndex M_FindType(const char* pTypeName) const;
+        TypeIndex M_FindOrCreateType(const char* pTypeName);
     };
 }

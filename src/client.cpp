@@ -9,7 +9,7 @@
 namespace OGLGAME
 {
     Client* Client::s_pInstance = nullptr;
-    Client::Client()
+    Client::Client(SDL_Window* pWindow) : m_renderer(pWindow)
     {
         vgassert(s_pInstance == nullptr && "There can't be a second instance of OGLGAME::Client");
         s_pInstance = this;
@@ -19,7 +19,7 @@ namespace OGLGAME
 
         m_resourceSystem.LoadShadersAndMaterials();
 
-        m_pPlayerObject = m_scene.AllocGameObject();
+        m_pPlayerObject = m_scene.M_AllocGameObject();
         m_pPlayerObject->AddComponent<Components::Player>();
     }
 

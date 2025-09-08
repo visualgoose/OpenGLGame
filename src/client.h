@@ -16,7 +16,9 @@ namespace OGLGAME
         static Client* s_pInstance;
 
     public: //static functions
-        static Client& S_GetInstance() { return *s_pInstance; }
+        static Client& GetInstance() { return *s_pInstance; }
+
+        static GameObject* GetPlayerObject() { return GetInstance().m_pPlayerObject; }
 
     private: //member variables
         TypeCache m_typeCache;
@@ -28,7 +30,7 @@ namespace OGLGAME
         GameObject* m_pPlayerObject = nullptr;
 
     private: //constructors
-        Client();
+        explicit Client(SDL_Window* pWindow);
     public:
         Client(Client&) = delete;
 
@@ -41,8 +43,6 @@ namespace OGLGAME
         ResourceSystem& GetResourceSystem() { return m_resourceSystem; }
         InputSystem& GetInputSystem() { return m_inputSystem; }
         Renderer& GetRenderer() { return m_renderer; }
-
-        GameObject* GetPlayerObject() const { return m_pPlayerObject; }
 
     private:
         void CacheInterfaces();

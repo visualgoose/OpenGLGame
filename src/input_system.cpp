@@ -1,15 +1,46 @@
 ﻿#include "input_system.h"
 
+#include "client.h"
 #include "vgassert.h"
 
 namespace OGLGAME
 {
-    InputSystem::InputSystem()
+    InputSystem::BindIndex InputSystem::RegisterBind(const Bind& bind)
     {
-        m_binds.resize(16);
+        return Client::GetInstance().GetInputSystem().M_RegisterBind(bind);
     }
 
-    InputSystem::BindIndex InputSystem::RegisterBind(const Bind& bind)
+    const InputSystem::Bind& InputSystem::GetBind(const BindIndex bindIndex)
+    {
+        return Client::GetInstance().GetInputSystem().M_GetBind(bindIndex);
+    }
+
+    void InputSystem::Frame()
+    {
+        Client::GetInstance().GetInputSystem().M_Frame();
+    }
+
+    void InputSystem::UpdateMouseDelta(const glm::vec2 mouseDelta)
+    {
+        Client::GetInstance().GetInputSystem().M_UpdateMouseDelta(mouseDelta);
+    }
+
+    void InputSystem::UpdateBinds(const SDL_Scancode scancode, const bool state)
+    {
+        Client::GetInstance().GetInputSystem().M_UpdateBinds(scancode, state);
+    }
+
+    glm::vec2 InputSystem::GetMouseDelta()
+    {
+        return Client::GetInstance().GetInputSystem().M_GetMouseDelta();
+    }
+
+    InputSystem::InputSystem()
+    {
+        m_binds.reserve(16);
+    }
+
+    InputSystem::BindIndex InputSystem::M_RegisterBind(const Bind& bind)
     {
         const BindIndex bindIndex = m_binds.size();
         Bind& registeredBind = m_binds.emplace_back(bind);
@@ -22,14 +53,14 @@ namespace OGLGAME
         return bindIndex;
     }
 
-    const InputSystem::Bind& InputSystem::GetBind(const BindIndex bindIndex) const
+    const InputSystem::Bind& InputSystem::M_GetBind(const BindIndex bindIndex) const
     {
         vgassert(bindIndex < m_binds.size());
 
         return m_binds[bindIndex];
     }
 
-    void InputSystem::Frame()
+    void InputSystem::M_Frame()
     {
         m_mouseDelta.x = 0.0f;
         m_mouseDelta.y = 0.0f;
@@ -39,12 +70,12 @@ namespace OGLGAME
         }
     }
 
-    void InputSystem::UpdateMouseDelta(const glm::vec2 mouseDelta)
+    void InputSystem::M_UpdateMouseDelta(const glm::vec2 mouseDelta)
     {
         m_mouseDelta = mouseDelta;
     }
 
-    void InputSystem::UpdateBinds(const SDL_Scancode scancode, const bool state)
+    void InputSystem::M_UpdateBinds(const SDL_Scancode scancode, const bool state)
     {
         for (auto& bind : m_binds)
         {

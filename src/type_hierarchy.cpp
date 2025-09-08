@@ -2,7 +2,7 @@
 
 #include "vgassert.h"
 
-#include "client.h"
+#include "type_cache.h"
 
 namespace OGLGAME
 {
@@ -43,9 +43,7 @@ namespace OGLGAME
 
     void TypeHierarchy::AddChild(const char* pChildName)
     {
-        m_hierarchy.emplace_back(Client::S_GetInstance()
-            .GetTypeCache()
-            .FindOrCreateType(pChildName));
+        m_hierarchy.emplace_back(TypeCache::FindOrCreateType(pChildName));
     }
 
     bool TypeHierarchy::IsTop(const TypeHierarchy& other) const

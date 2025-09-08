@@ -47,14 +47,14 @@ namespace OGLGAME
         shaderPathJSON.get_to(shaderPathStr);
         std::filesystem::path shaderAbsPath = m_path.parent_path() / shaderPathStr;
 
-        const ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-        ResourceSystem::ResourceID shaderID = resourceSystem.GetResourceID(shaderAbsPath);
+
+        ResourceSystem::ResourceID shaderID = ResourceSystem::GetResourceID(shaderAbsPath);
         m_shaderIndex = shaderID.m_resourceIndex;
         if (m_shaderIndex == ResourceSystem::c_invalidResourceIndex ||
             shaderID.m_resourceType != ResourceSystem::ResourceType_shader)
         {
             std::filesystem::path shaderPath = shaderPathStr;
-            shaderID = resourceSystem.GetResourceID(shaderPath);
+            shaderID = ResourceSystem::GetResourceID(shaderPath);
             m_shaderIndex = shaderID.m_resourceIndex;
         }
 
@@ -67,7 +67,7 @@ namespace OGLGAME
             return;
         }
 
-        const Shader& shader = resourceSystem.GetShader(m_shaderIndex);
+        const Shader& shader = ResourceSystem::GetShader(m_shaderIndex);
         const std::vector<Shader::Property> shaderProperties = shader.GetProperties();
 
         const json& propertyValuesJSON = materialJSON["properties"];
@@ -102,17 +102,13 @@ namespace OGLGAME
         std::filesystem::path path;
         std::filesystem::path path2;
         std::string string;
-        ResourceSystem& resourceSystem = Client::S_GetInstance()
-                            .GetResourceSystem();
         for (auto& propertyValue : m_propertyValues)
         {
             switch (propertyValue.m_type)
             {
                 case Shader::PropertyType_tex2D:
                     if (propertyValue.m_resourceIndex != c_invalidResourceIndex)
-                        Client::S_GetInstance()
-                            .GetResourceSystem()
-                            .TextureAddRef(propertyValue.m_resourceIndex);
+                        ResourceSystem::TextureAddRef(propertyValue.m_resourceIndex);
                     else
                     {
                         string = std::get<std::string>(propertyValue.m_value); //get tex2D path
@@ -135,9 +131,9 @@ namespace OGLGAME
                         {
                             ResourceIndex textureIndex;
                             if (uint == 0)
-                                textureIndex = resourceSystem.TextureAddRef(path);
+                                textureIndex = ResourceSystem::TextureAddRef(path);
                             else
-                                textureIndex = resourceSystem.TextureAddRef(path2);
+                                textureIndex = ResourceSystem::TextureAddRef(path2);
                             propertyValue.m_resourceIndex = textureIndex;
                         }
                     }
@@ -155,9 +151,7 @@ namespace OGLGAME
             switch (propertyValue.m_type)
             {
                 case Shader::PropertyType_tex2D:
-                    Client::S_GetInstance()
-                        .GetResourceSystem()
-                        .TextureRelease(propertyValue.m_resourceIndex);
+                    ResourceSystem::TextureRelease(propertyValue.m_resourceIndex);
                     break;
                 default:
                     break;

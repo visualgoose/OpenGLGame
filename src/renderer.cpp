@@ -13,27 +13,32 @@
 
 namespace OGLGAME
 {
-    Renderer::Renderer()
+    void Renderer::Render()
+    {
+        Client::GetInstance().GetRenderer().M_Render();
+    }
+
+    Renderer::Renderer(SDL_Window* pWindow) : m_pWindow(pWindow)
     {
         glDepthFunc(GL_LESS);
         glEnable(GL_DEPTH_TEST);
     }
 
-    void Renderer::Render()
+    void Renderer::M_Render() const
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-        const Scene& scene = Client::S_GetInstance().GetScene();
-        Scene::GameObjectHolder* pGameObjects = scene.GetGameObjects();
-        const size_t gameObjectCount = scene.GetGameObjectCount();
+        Scene::GameObjectHolder* pGameObjects = Scene::GetGameObjects();
+        const size_t gameObjectCount = Scene::GetGameObjectCount();
 
-        GameObject* pPlayerObj = Client::S_GetInstance().GetPlayerObject();
+        GameObject* pPlayerObj = Client::GetPlayerObject();
         const auto* pPlayerTransform = pPlayerObj->GetComponent<Components::Transform>();
 
         glm::mat4 view = glm::translate(glm::mat4(1.0f), pPlayerTransform->m_position) * glm::mat4_cast(pPlayerTransform->m_rotation);
         view = glm::inverse(view);
-        const glm::mat4 perspective = glm::perspective(90.0f, 1.0f, 0.03f, 3000.0f);
+        int x, y;
+        SDL_GetWindowSizeInPixels(m_pWindow, &x, &y);
+        const glm::mat4 perspective = glm::perspective(90.0f, static_cast<float>(x) / static_cast<float>(y), 0.03f, 3000.0f);
         const glm::mat4 VP = perspective * view;
         size_t renderedEntityCount = 0;
         for (size_t i = 0; renderedEntityCount != gameObjectCount; i++)
@@ -55,7 +60,7 @@ namespace OGLGAME
                     glm::mat4_cast(pTransform->m_rotation) * glm::scale(glm::mat4(1.0f), pTransform->m_scale);
                 glm::mat4 MVP = VP * modelMatrix;
 
-                const Model& model = resourceSystem.GetModel(modelIndex);
+                const Model& model = ResourceSystem::GetModel(modelIndex);
                 const std::vector<Model::Mesh> meshes = model.GetMeshes();
 
                 Shader::Feature pShaderFeatures[Shader::Feature_Count];
@@ -64,8 +69,8 @@ namespace OGLGAME
                 {
                     if (mesh.m_materialIndex == ResourceSystem::c_invalidResourceIndex)
                         continue;
-                    const Material& material = resourceSystem.GetMaterial(mesh.m_materialIndex);
-                    const Shader& shader = resourceSystem.GetShader(material.GetShaderIndex());
+                    const Material& material = ResourceSystem::GetMaterial(mesh.m_materialIndex);
+                    const Shader& shader = ResourceSystem::GetShader(material.GetShaderIndex());
 
                     glBindVertexArray(mesh.m_vao);
                     glUseProgram(shader.GetShaderProgram());
@@ -98,7 +103,7 @@ namespace OGLGAME
                             case Shader::PropertyType_tex2D:
                                 glUniform1i(shaderProperty.m_uniformLocation, currentTexture);
                                 glActiveTexture(GL_TEXTURE0 + currentTexture);
-                                glBindTexture(GL_TEXTURE_2D, resourceSystem.GetTexture(properties[shaderPropertyIndex].m_resourceIndex).GetTexture());
+                                glBindTexture(GL_TEXTURE_2D, ResourceSystem::GetTexture(properties[shaderPropertyIndex].m_resourceIndex).GetTexture());
                                 currentTexture++;
                                 break;
                             default:

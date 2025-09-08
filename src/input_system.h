@@ -28,6 +28,16 @@ namespace OGLGAME
             bool m_prevState = false;
         };
 
+    public: //static functions
+        [[nodiscard]] static BindIndex RegisterBind(const Bind& bind);
+        [[nodiscard]] static const Bind& GetBind(BindIndex bindIndex);
+
+        static void Frame();
+        static void UpdateMouseDelta(glm::vec2 mouseDelta);
+        static void UpdateBinds(SDL_Scancode scancode, bool state);
+
+        [[nodiscard]] static glm::vec2 GetMouseDelta();
+
     private: //member variables
         size_t m_bindCount = 0;
         std::vector<Bind> m_binds;
@@ -38,14 +48,14 @@ namespace OGLGAME
         InputSystem();
 
     public: //member functions
-        [[nodiscard]] BindIndex RegisterBind(const Bind& bind);
-        [[nodiscard]] const Bind& GetBind(BindIndex bindIndex) const;
+        [[nodiscard]] BindIndex M_RegisterBind(const Bind& bind);
+        [[nodiscard]] const Bind& M_GetBind(BindIndex bindIndex) const;
 
-        void Frame();
-        void UpdateMouseDelta(glm::vec2 mouseDelta);
-        void UpdateBinds(SDL_Scancode scancode, bool state);
+        void M_Frame();
+        void M_UpdateMouseDelta(glm::vec2 mouseDelta);
+        void M_UpdateBinds(SDL_Scancode scancode, bool state);
 
-        [[nodiscard]] glm::vec2 GetMouseDelta() const { return m_mouseDelta; }
+        [[nodiscard]] glm::vec2 M_GetMouseDelta() const { return m_mouseDelta; }
     };
 }
 

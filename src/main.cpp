@@ -60,14 +60,14 @@ int main(int argCount, char** ppArgs)
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &flags);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags | SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
-    SDL_Window* pWindow = SDL_CreateWindow("OpenGLGame window", 900, 900, SDL_WINDOW_OPENGL);
+    SDL_Window* pWindow = SDL_CreateWindow("OpenGLGame window", 1600, 900, SDL_WINDOW_OPENGL);
     if (!pWindow)
     {
         g_log.Fatal("Failed to create a window:")
             .NextLine("{}", SDL_GetError());
         return -1;
     }
-    const SDL_GLContext openGLContext = SDL_GL_CreateContext(pWindow);
+    SDL_GLContext openGLContext = SDL_GL_CreateContext(pWindow);
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)))
     {
         g_log.Fatal("Glad failed to load");
@@ -81,18 +81,20 @@ int main(int argCount, char** ppArgs)
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #endif
     {
-        Client client; //creates Client singleton
-        Scene& scene = client.GetScene();
+        Client client(pWindow); //creates Client singleton
 
-        GameObject* pGameObject = scene.AllocGameObject();
+        GameObject* pGameObject = Scene::AllocGameObject();
         auto* pModelFilter = pGameObject->AddComponent<Components::ModelFilter>();
         pModelFilter->SetModel("models/test.obj");
         auto* pTransform = pGameObject->AddComponent<Components::Transform>();
 
-        InputSystem& inputSystem = client.GetInputSystem();
-        RegisterInputs();
+        pGameObject = Scene::AllocGameObject();
+        pModelFilter = pGameObject->AddComponent<Components::ModelFilter>();
+        pModelFilter->SetModel("models/test.obj");
+        pTransform = pGameObject->AddComponent<Components::Transform>();
+        pTransform->m_position.z += 10.0f;
 
-        Renderer& renderer = client.GetRenderer();
+        RegisterInputs();
 
         SDL_Event event;
         bool shouldNotClose = true;
@@ -102,10 +104,12 @@ int main(int argCount, char** ppArgs)
 
         SDL_GL_SetSwapInterval(0);
 
+        SDL_Cursor* pCursor = SDL_GetCursor();
+
         while (shouldNotClose)
         {
             start = SDL_GetTicksNS();
-            inputSystem.Frame();
+            InputSystem::Frame();
             while (shouldNotClose && SDL_PollEvent(&event))
             {
                 switch (event.type)
@@ -113,31 +117,36 @@ int main(int argCount, char** ppArgs)
                     case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                         shouldNotClose = false;
                         break;
+                    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                        if (event.button.button == SDL_BUTTON_LEFT)
+                            SDL_SetWindowRelativeMouseMode(pWindow, true);
+                        break;
                     case SDL_EVENT_KEY_DOWN:
-                        inputSystem.UpdateBinds(event.key.scancode, true);
+                        if (event.key.scancode == SDL_SCANCODE_ESCAPE)
+                        {
+                            SDL_SetWindowKeyboardGrab(pWindow, false);
+                            SDL_SetWindowMouseGrab(pWindow, false);
+                            SDL_SetWindowRelativeMouseMode(pWindow, false);
+                            break;
+                        }
+                        InputSystem::UpdateBinds(event.key.scancode, true);
                         break;
                     case SDL_EVENT_KEY_UP:
-                        inputSystem.UpdateBinds(event.key.scancode, false);
+                        InputSystem::UpdateBinds(event.key.scancode, false);
                         break;
                     case SDL_EVENT_MOUSE_MOTION:
-                        inputSystem.UpdateMouseDelta(glm::vec2(event.motion.xrel, event.motion.yrel));
+                        InputSystem::UpdateMouseDelta(glm::vec2(event.motion.xrel, event.motion.yrel));
                         break;
                     default:
                         break;
                 }
             }
 
-            scene.Frame(deltaTime);
-            renderer.Render();
+            Scene::Frame(deltaTime);
+            Renderer::Render();
             SDL_GL_SwapWindow(pWindow);
             end = SDL_GetTicksNS();
             deltaTime = (double)(end - start) / 1000000000.0;
-
-            if ((end - start) < (1000000000 / 256))
-            {
-                uint64_t delay = 1000000000 / 256 - (end - start);
-                SDL_DelayPrecise(delay);
-            }
         }
     }
 

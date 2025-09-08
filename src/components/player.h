@@ -8,7 +8,7 @@
 
 namespace OGLGAME::Components
 {
-    class Player : public EntityComponent
+    class Player final : public EntityComponent
     {
     private: //static variables
         static bool s_typeRegistered;

@@ -37,6 +37,26 @@ namespace OGLGAME
             }
         };
 
+    public: //static functions
+        static void ModelRelease(ResourceIndex modelIndex);
+        static void ModelAddRef(ResourceIndex modelIndex);
+        static ResourceIndex ModelAddRef(const std::filesystem::path& modelPath);
+
+        static void MaterialRelease(ResourceIndex materialIndex);
+        static void MaterialAddRef(ResourceIndex materialIndex);
+        static ResourceIndex MaterialAddRef(const std::filesystem::path& materialPath);
+
+        static void TextureRelease(ResourceIndex textureIndex);
+        static void TextureAddRef(ResourceIndex textureIndex);
+        static ResourceIndex TextureAddRef(const std::filesystem::path& texturePath);
+
+        static ResourceID GetResourceID(const std::filesystem::path& filePath);
+
+        static const Model& GetModel(ResourceIndex modelIndex);
+        static const Texture& GetTexture(ResourceIndex textureIndex);
+        static const Material& GetMaterial(ResourceIndex materialIndex);
+        static const Shader& GetShader(ResourceIndex shaderIndex);
+
     private: //member variables
         std::unordered_map<std::filesystem::path, ResourceID> m_path2ResourceID;
         size_t m_modelCount = 0;
@@ -56,25 +76,24 @@ namespace OGLGAME
         ResourceSystem& operator=(ResourceSystem&) = delete;
 
     public: //member functions
-        void ModelRelease(ResourceIndex modelIndex);
-        void ModelAddRef(ResourceIndex modelIndex);
-        ResourceIndex ModelAddRef(const std::filesystem::path& modelPath);
+        void M_ModelRelease(ResourceIndex modelIndex);
+        void M_ModelAddRef(ResourceIndex modelIndex);
+        ResourceIndex M_ModelAddRef(const std::filesystem::path& modelPath);
 
-        void MaterialRelease(ResourceIndex materialIndex);
-        void MaterialAddRef(ResourceIndex materialIndex);
-        ResourceIndex MaterialAddRef(const std::filesystem::path& materialPath);
+        void M_MaterialRelease(ResourceIndex materialIndex);
+        void M_MaterialAddRef(ResourceIndex materialIndex);
+        ResourceIndex M_MaterialAddRef(const std::filesystem::path& materialPath);
 
-        void TextureRelease(ResourceIndex textureIndex);
-        void TextureAddRef(ResourceIndex textureIndex);
-        ResourceIndex TextureAddRef(const std::filesystem::path& texturePath);
+        void M_TextureRelease(ResourceIndex textureIndex);
+        void M_TextureAddRef(ResourceIndex textureIndex);
+        ResourceIndex M_TextureAddRef(const std::filesystem::path& texturePath);
 
-        ResourceID GetResourceID(const std::filesystem::path& filePath) const;
+        ResourceID M_GetResourceID(const std::filesystem::path& filePath) const;
 
-        const Model& GetModel(ResourceIndex modelIndex) const;
-        const Texture& GetTexture(ResourceIndex textureIndex) const;
-        const Material& GetMaterial(ResourceIndex materialIndex) const;
-        const Shader& GetShader(ResourceIndex shaderIndex) const;
-
+        const Model& M_GetModel(ResourceIndex modelIndex) const;
+        const Texture& M_GetTexture(ResourceIndex textureIndex) const;
+        const Material& M_GetMaterial(ResourceIndex materialIndex) const;
+        const Shader& M_GetShader(ResourceIndex shaderIndex) const;
 
     friend class Client;
     };

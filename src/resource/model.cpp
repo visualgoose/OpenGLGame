@@ -17,8 +17,6 @@ namespace OGLGAME
     {
         vgassert(!m_valid);
 
-        ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-
         m_path = std::move(path);
         m_resourceIndex = resourceIndex;
 
@@ -43,11 +41,11 @@ namespace OGLGAME
             const char* pMaterialPathAssimp = pScene->mMaterials[pMesh->mMaterialIndex]->GetName().C_Str();
             materialAbsPath = m_path.parent_path() / pMaterialPathAssimp;
 
-            ResourceIndex materialIndex = resourceSystem.MaterialAddRef(materialAbsPath);
+            ResourceIndex materialIndex = ResourceSystem::MaterialAddRef(materialAbsPath);
             if (materialIndex == c_invalidResourceIndex)
             {
                 materialPath = pMaterialPathAssimp;
-                materialIndex = resourceSystem.MaterialAddRef(materialPath);
+                materialIndex = ResourceSystem::MaterialAddRef(materialPath);
             }
             if (materialIndex == c_invalidResourceIndex)
             {
@@ -98,8 +96,8 @@ namespace OGLGAME
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
-            const ResourceIndex shaderIndex = resourceSystem.GetMaterial(materialIndex).GetShaderIndex();
-            const Shader& shader = resourceSystem.GetShader(shaderIndex);
+            const ResourceIndex shaderIndex = ResourceSystem::GetMaterial(materialIndex).GetShaderIndex();
+            const Shader& shader = ResourceSystem::GetShader(shaderIndex);
 
             Shader::VertexAttribute pVertexAttributes[Shader::VertexAttribute_Count] = { Shader::VertexAttribute_none };
             shader.GetVertexAttributes(pVertexAttributes, Shader::VertexAttribute_Count);
@@ -161,7 +159,6 @@ namespace OGLGAME
         vgassert(m_valid);
 
         m_valid = false;
-        ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
         for (const auto& mesh : m_meshes)
         {
             const GLuint pBuffers[2] =
@@ -172,7 +169,7 @@ namespace OGLGAME
             glDeleteBuffers(2, pBuffers);
             glDeleteVertexArrays(1, &mesh.m_vao);
             if (mesh.m_materialIndex != c_invalidResourceIndex)
-                resourceSystem.MaterialRelease(mesh.m_materialIndex);
+                ResourceSystem::MaterialRelease(mesh.m_materialIndex);
         }
     }
 

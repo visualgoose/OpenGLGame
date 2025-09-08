@@ -4,13 +4,85 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "client.h"
 #include "logging.h"
 
 #include "vgassert.h"
 
 #include "file_system.h"
 
-namespace OGLGAME {
+namespace OGLGAME
+{
+    void ResourceSystem::ModelRelease(const ResourceIndex modelIndex)
+    {
+        Client::GetInstance().GetResourceSystem().M_ModelRelease(modelIndex);
+    }
+
+    void ResourceSystem::ModelAddRef(const ResourceIndex modelIndex)
+    {
+        Client::GetInstance().GetResourceSystem().M_ModelAddRef(modelIndex);
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::ModelAddRef(const std::filesystem::path& modelPath)
+    {
+        return Client::GetInstance().GetResourceSystem().M_ModelAddRef(modelPath);
+    }
+
+    void ResourceSystem::MaterialRelease(const ResourceIndex materialIndex)
+    {
+        Client::GetInstance().GetResourceSystem().M_MaterialRelease(materialIndex);
+    }
+
+    void ResourceSystem::MaterialAddRef(const ResourceIndex materialIndex)
+    {
+        Client::GetInstance().GetResourceSystem().M_MaterialAddRef(materialIndex);
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::MaterialAddRef(const std::filesystem::path& materialPath)
+    {
+        return Client::GetInstance().GetResourceSystem().M_MaterialAddRef(materialPath);
+    }
+
+    void ResourceSystem::TextureRelease(const ResourceIndex textureIndex)
+    {
+        Client::GetInstance().GetResourceSystem().M_TextureRelease(textureIndex);
+    }
+
+    void ResourceSystem::TextureAddRef(const ResourceIndex textureIndex)
+    {
+        Client::GetInstance().GetResourceSystem().M_TextureAddRef(textureIndex);
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::TextureAddRef(const std::filesystem::path& texturePath)
+    {
+        return Client::GetInstance().GetResourceSystem().M_TextureAddRef(texturePath);
+    }
+
+    ResourceSystem::ResourceID ResourceSystem::GetResourceID(const std::filesystem::path& filePath)
+    {
+        return Client::GetInstance().GetResourceSystem().M_GetResourceID(filePath);
+    }
+
+    const Model& ResourceSystem::GetModel(const ResourceIndex modelIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_GetModel(modelIndex);
+    }
+
+    const Texture& ResourceSystem::GetTexture(const ResourceIndex textureIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_GetTexture(textureIndex);
+    }
+
+    const Material& ResourceSystem::GetMaterial(const ResourceIndex materialIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_GetMaterial(materialIndex);
+    }
+
+    const Shader& ResourceSystem::GetShader(const ResourceIndex shaderIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_GetShader(shaderIndex);
+    }
+
     ResourceSystem::ResourceSystem()
     {
         m_path2ResourceID.reserve(16);
@@ -62,7 +134,7 @@ namespace OGLGAME {
         }
     }
 
-    void ResourceSystem::ModelRelease(ResourceIndex modelIndex)
+    void ResourceSystem::M_ModelRelease(ResourceIndex modelIndex)
     {
         vgassert(modelIndex < m_models.size());
 
@@ -71,14 +143,14 @@ namespace OGLGAME {
             m_modelCount--;
     }
 
-    void ResourceSystem::ModelAddRef(ResourceIndex modelIndex)
+    void ResourceSystem::M_ModelAddRef(ResourceIndex modelIndex)
     {
         vgassert(modelIndex < m_models.size());
 
         m_models[modelIndex].AddRef();
     }
 
-    ResourceSystem::ResourceIndex ResourceSystem::ModelAddRef(const std::filesystem::path& modelPath)
+    ResourceSystem::ResourceIndex ResourceSystem::M_ModelAddRef(const std::filesystem::path& modelPath)
     {
         if(const auto modelIt = m_path2ResourceID.find(modelPath); modelIt != m_path2ResourceID.end())
         {
@@ -111,21 +183,21 @@ namespace OGLGAME {
         return modelIndex;
     }
 
-    void ResourceSystem::MaterialRelease(const ResourceIndex materialIndex)
+    void ResourceSystem::M_MaterialRelease(const ResourceIndex materialIndex)
     {
         vgassert(materialIndex < m_materials.size());
 
         m_materials[materialIndex].Release();
     }
 
-    void ResourceSystem::MaterialAddRef(const ResourceIndex materialIndex)
+    void ResourceSystem::M_MaterialAddRef(const ResourceIndex materialIndex)
     {
         vgassert(materialIndex < m_materials.size());
 
         m_materials[materialIndex].AddRef();
     }
 
-    ResourceSystem::ResourceIndex ResourceSystem::MaterialAddRef(const std::filesystem::path& materialPath)
+    ResourceSystem::ResourceIndex ResourceSystem::M_MaterialAddRef(const std::filesystem::path& materialPath)
     {
         const auto materialIt = m_path2ResourceID.find(materialPath);
         if (materialIt == m_path2ResourceID.end())
@@ -138,7 +210,7 @@ namespace OGLGAME {
         return materialIndex;
     }
 
-    void ResourceSystem::TextureRelease(const ResourceIndex textureIndex)
+    void ResourceSystem::M_TextureRelease(const ResourceIndex textureIndex)
     {
         vgassert(textureIndex < m_textures.size());
 
@@ -147,14 +219,14 @@ namespace OGLGAME {
             m_textureCount--;
     }
 
-    void ResourceSystem::TextureAddRef(const ResourceIndex textureIndex)
+    void ResourceSystem::M_TextureAddRef(const ResourceIndex textureIndex)
     {
         vgassert(textureIndex < m_textures.size());
 
         m_textures[textureIndex].AddRef();
     }
 
-    ResourceSystem::ResourceIndex ResourceSystem::TextureAddRef(const std::filesystem::path& texturePath)
+    ResourceSystem::ResourceIndex ResourceSystem::M_TextureAddRef(const std::filesystem::path& texturePath)
     {
         if(const auto textureIt = m_path2ResourceID.find(texturePath); textureIt != m_path2ResourceID.end())
         {
@@ -187,7 +259,7 @@ namespace OGLGAME {
         return textureIndex;
     }
 
-    ResourceSystem::ResourceID ResourceSystem::GetResourceID(const std::filesystem::path& filePath) const
+    ResourceSystem::ResourceID ResourceSystem::M_GetResourceID(const std::filesystem::path& filePath) const
     {
         const auto& resourceIDIt = m_path2ResourceID.find(filePath);
         if (resourceIDIt == m_path2ResourceID.end())
@@ -195,28 +267,28 @@ namespace OGLGAME {
         return resourceIDIt->second;
     }
 
-    const Model& ResourceSystem::GetModel(const ResourceIndex modelIndex) const
+    const Model& ResourceSystem::M_GetModel(const ResourceIndex modelIndex) const
     {
         vgassert(m_models.size() > modelIndex);
 
         return m_models[modelIndex];
     }
 
-    const Texture& ResourceSystem::GetTexture(const ResourceIndex textureIndex) const
+    const Texture& ResourceSystem::M_GetTexture(const ResourceIndex textureIndex) const
     {
         vgassert(m_textures.size() > textureIndex);
 
         return m_textures[textureIndex];
     }
 
-    const Material& ResourceSystem::GetMaterial(const ResourceIndex materialIndex) const
+    const Material& ResourceSystem::M_GetMaterial(const ResourceIndex materialIndex) const
     {
         vgassert(m_materials.size() > materialIndex);
 
         return m_materials[materialIndex];
     }
 
-    const Shader& ResourceSystem::GetShader(const ResourceIndex shaderIndex) const
+    const Shader& ResourceSystem::M_GetShader(const ResourceIndex shaderIndex) const
     {
         vgassert(m_shaders.size() > shaderIndex);
 

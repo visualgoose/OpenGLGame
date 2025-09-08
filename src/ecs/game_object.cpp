@@ -54,8 +54,7 @@ namespace OGLGAME
             return;
         if (m_parentID != c_invalidGOID)
         {
-            const Scene& scene = Client::S_GetInstance().GetScene();
-            GameObject* pOldParent = scene.GetGameObject(m_parentID);
+            GameObject* pOldParent = Scene::GetGameObject(m_parentID);
             for (auto it = pOldParent->m_children.begin(); it != pOldParent->m_children.end(); ++it)
             {
                 if (*it == m_id)
@@ -65,13 +64,20 @@ namespace OGLGAME
                 }
             }
         }
-        m_parentID = pParent->m_id;
-        pParent->m_children.push_back(m_id);
+        if (pParent)
+        {
+            m_parentID = pParent->m_id;
+            pParent->m_children.push_back(m_id);
+        }
+        else
+        {
+            m_parentID = c_invalidGOID;
+        }
     }
 
     void GameObject::SetParent(const GameObjectID parentID)
     {
-        const Scene& scene = Client::S_GetInstance().GetScene();
-        SetParent(scene.GetGameObject(parentID));
+
+        SetParent(Scene::GetGameObject(parentID));
     }
 }

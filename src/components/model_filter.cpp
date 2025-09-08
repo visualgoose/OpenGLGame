@@ -18,26 +18,25 @@ namespace OGLGAME::Components
 
     ModelFilter::~ModelFilter()
     {
-        ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
+        ResourceSystem& resourceSystem = Client::GetInstance().GetResourceSystem();
         if (m_modelIndex != ResourceSystem::c_invalidResourceIndex)
-            resourceSystem.ModelRelease(m_modelIndex);
+            ResourceSystem::ModelRelease(m_modelIndex);
     }
 
     void ModelFilter::SetModel(const ResourceSystem::ResourceIndex modelIndex)
     {
         if (m_modelIndex == modelIndex)
             return;
-        ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
+        ResourceSystem& resourceSystem = Client::GetInstance().GetResourceSystem();
         if (m_modelIndex != ResourceSystem::c_invalidResourceIndex)
-            resourceSystem.ModelRelease(m_modelIndex);
-        resourceSystem.ModelAddRef(modelIndex);
+            ResourceSystem::ModelRelease(m_modelIndex);
+        ResourceSystem::ModelAddRef(modelIndex);
         m_modelIndex = modelIndex;
     }
 
     void ModelFilter::SetModel(const std::filesystem::path& modelPath)
     {
-        ResourceSystem& resourceSystem = Client::S_GetInstance().GetResourceSystem();
-        auto [modelIndex, resourceType] = resourceSystem.GetResourceID(modelPath);
+        auto [modelIndex, resourceType] = ResourceSystem::GetResourceID(modelPath);
         if (resourceType != ResourceSystem::ResourceType_model && resourceType != ResourceSystem::ResourceType_invalid)
         {
             g_log.Error("Tried setting model path to a non model path");
@@ -46,14 +45,14 @@ namespace OGLGAME::Components
         if (modelIndex != ResourceSystem::c_invalidResourceIndex && modelIndex == m_modelIndex)
             return;
         if (m_modelIndex != ResourceSystem::c_invalidResourceIndex)
-            resourceSystem.ModelRelease(m_modelIndex);
+            ResourceSystem::ModelRelease(m_modelIndex);
 
         if (modelIndex == ResourceSystem::c_invalidResourceIndex)
-            m_modelIndex = resourceSystem.ModelAddRef(modelPath);
+            m_modelIndex = ResourceSystem::ModelAddRef(modelPath);
         else
         {
             m_modelIndex = modelIndex;
-            resourceSystem.ModelAddRef(modelIndex);
+            ResourceSystem::ModelAddRef(modelIndex);
         }
     }
 }

@@ -7,6 +7,10 @@
 #include "client.h"
 #include "glm/gtc/quaternion.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/euler_angles.hpp>
+#include "glm/gtx/string_cast.hpp"
+
 namespace OGLGAME::Components
 {
     bool Player::s_typeRegistered = false;
@@ -16,7 +20,7 @@ namespace OGLGAME::Components
     {
         if (s_typeRegistered)
             return;
-        s_typeHierarchy.AddChild("Player");
+        s_typeHierarchy.AddChild("player");
         s_typeRegistered = true;
     }
 
@@ -30,15 +34,25 @@ namespace OGLGAME::Components
         }
     }
 
+    glm::quat QuaternionRotate(const glm::vec3& axis, float angle)
+    {
+        float angleRad = glm::radians(angle);
+        auto axisNorm = glm::normalize(axis);
+
+        float w = glm::cos(angleRad / 2);
+        float v = glm::sin(angleRad / 2);
+        glm::vec3 qv = axisNorm * v;
+
+        return { w, qv };
+    }
+
     void Player::Frame(double deltaTime)
     {
-        InputSystem& inputSystem = Client::S_GetInstance().GetInputSystem();
-        glm::vec2 mouseDelta = inputSystem.GetMouseDelta();
-        glm::vec3 eulerRot = glm::eulerAngles(m_pTransform->m_rotation);
-        eulerRot.x -= mouseDelta.y * static_cast<float>(deltaTime) * 5;
-        eulerRot.x = glm::clamp(eulerRot.x, -89.0f, 89.0f);
-        eulerRot.y -= mouseDelta.x * static_cast<float>(deltaTime) * 5;
-        m_pTransform->m_rotation = glm::quat(eulerRot);
+        glm::vec2 mouseDelta = InputSystem::GetMouseDelta();
+        mouseDelta *= static_cast<float>(deltaTime) * 100;
+
+        m_pTransform->m_rotation *= glm::quat(glm::eulerAngleXY(mouseDelta.x, mouseDelta.y));
+
 
         m_movement = { 0.0f, 0.0f };
         if (g_pForward->m_state)
@@ -57,9 +71,5 @@ namespace OGLGAME::Components
 
         m_pTransform->m_position += 10.0f * (m_movement.x * (m_pTransform->m_rotation * glm::vec3(1.0f, 0.0f, 0.0f)) +
             m_movement.y * (m_pTransform->m_rotation * glm::vec3(0.0f, 0.0f, -1.0f)));
-        g_log.Info("Player pos:")
-            .NextLine("x: {}", m_pTransform->m_position.x)
-            .NextLine("y: {}", m_pTransform->m_position.y)
-            .NextLine("z: {}", m_pTransform->m_position.z);
     }
 }

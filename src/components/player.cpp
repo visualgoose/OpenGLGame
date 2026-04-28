@@ -8,8 +8,9 @@
 #include "glm/gtc/quaternion.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/euler_angles.hpp>
 #include "glm/gtx/string_cast.hpp"
+
+#include <cmath>
 
 namespace OGLGAME::Components
 {
@@ -32,27 +33,21 @@ namespace OGLGAME::Components
         {
             m_pTransform = pGameObject->AddComponent<Transform>();
         }
+        m_pTransform->m_rotation = glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 0.0f)));
     }
 
-    glm::quat QuaternionRotate(const glm::vec3& axis, float angle)
-    {
-        float angleRad = glm::radians(angle);
-        auto axisNorm = glm::normalize(axis);
-
-        float w = glm::cos(angleRad / 2);
-        float v = glm::sin(angleRad / 2);
-        glm::vec3 qv = axisNorm * v;
-
-        return { w, qv };
-    }
-
-    void Player::Frame(double deltaTime)
+    void Player::Frame(const double deltaTime)
     {
         glm::vec2 mouseDelta = InputSystem::GetMouseDelta();
-        mouseDelta *= static_cast<float>(deltaTime) * 100;
+        mouseDelta *= static_cast<float>(deltaTime) * 200;
+        mouseDelta = glm::radians(mouseDelta);
 
-        m_pTransform->m_rotation *= glm::quat(glm::eulerAngleXY(mouseDelta.x, mouseDelta.y));
+        m_camPitch -= mouseDelta.y;
+        m_camPitch = glm::clamp(m_camPitch, -c_pitchLimit, c_pitchLimit);
+        m_camYaw -= mouseDelta.x;
+        m_camYaw = fmodf(m_camYaw, glm::radians(360.0f));
 
+        m_pTransform->m_rotation = glm::quat(glm::vec3(m_camPitch, m_camYaw, 0.0f));
 
         m_movement = { 0.0f, 0.0f };
         if (g_pForward->m_state)

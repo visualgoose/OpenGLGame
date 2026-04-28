@@ -18,7 +18,6 @@ namespace OGLGAME::Components
 
     ModelFilter::~ModelFilter()
     {
-        ResourceSystem& resourceSystem = Client::GetInstance().GetResourceSystem();
         if (m_modelIndex != ResourceSystem::c_invalidResourceIndex)
             ResourceSystem::ModelRelease(m_modelIndex);
     }
@@ -27,7 +26,6 @@ namespace OGLGAME::Components
     {
         if (m_modelIndex == modelIndex)
             return;
-        ResourceSystem& resourceSystem = Client::GetInstance().GetResourceSystem();
         if (m_modelIndex != ResourceSystem::c_invalidResourceIndex)
             ResourceSystem::ModelRelease(m_modelIndex);
         ResourceSystem::ModelAddRef(modelIndex);

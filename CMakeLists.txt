@@ -50,6 +50,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/extinclude")
 
+#Jolt
+FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics
+        GIT_TAG master
+        SOURCE_SUBDIR "Build"
+)
+FetchContent_MakeAvailable(JoltPhysics)
+target_link_libraries(${PROJECT_NAME} PRIVATE Jolt)
+
 #SDL3
 FetchContent_Declare(
     sdl3
@@ -68,6 +78,15 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sdl3image)
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3_image::SDL3_image-shared)
 
+#Sndfile
+FetchContent_Declare(
+        sndfile
+        GIT_REPOSITORY  https://github.com/libsndfile/libsndfile.git
+        GIT_TAG         master
+)
+FetchContent_MakeAvailable(sndfile)
+target_link_libraries(${PROJECT_NAME} PRIVATE sndfile)
+
 #glm
 FetchContent_Declare(
     glm
@@ -81,7 +100,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 FetchContent_Declare(
     fmt
     GIT_REPOSITORY  https://github.com/fmtlib/fmt.git
-    GIT_TAG         master
+    GIT_TAG         main
 )
 FetchContent_MakeAvailable(fmt)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
@@ -107,3 +126,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(assimp)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
+
+#steam audio
+target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/extslib/phonon.lib")

@@ -58,6 +58,21 @@ namespace OGLGAME
         return Client::GetInstance().GetResourceSystem().M_TextureAddRef(texturePath);
     }
 
+    void ResourceSystem::AudioRelease(ResourceIndex audioIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_AudioRelease(audioIndex);
+    }
+
+    void ResourceSystem::AudioAddRef(ResourceIndex audioIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_AudioAddRef(audioIndex);
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::AudioAddRef(const std::filesystem::path& audioPath)
+    {
+        return Client::GetInstance().GetResourceSystem().M_AudioAddRef(audioPath);
+    }
+
     ResourceSystem::ResourceID ResourceSystem::GetResourceID(const std::filesystem::path& filePath)
     {
         return Client::GetInstance().GetResourceSystem().M_GetResourceID(filePath);
@@ -83,6 +98,11 @@ namespace OGLGAME
         return Client::GetInstance().GetResourceSystem().M_GetShader(shaderIndex);
     }
 
+    const Audio& ResourceSystem::GetAudio(const ResourceIndex audioIndex)
+    {
+        return Client::GetInstance().GetResourceSystem().M_GetAudio(audioIndex);
+    }
+
     ResourceSystem::ResourceSystem()
     {
         m_path2ResourceID.reserve(16);
@@ -90,6 +110,7 @@ namespace OGLGAME
         m_textures.reserve(16);
         m_materials.reserve(16);
         m_shaders.reserve(16);
+        m_audioTracks.reserve(16);
     }
     void ResourceSystem::LoadShadersAndMaterials()
     {
@@ -259,6 +280,55 @@ namespace OGLGAME
         return textureIndex;
     }
 
+    void ResourceSystem::M_AudioRelease(const ResourceIndex audioIndex)
+    {
+        vgassert(audioIndex < m_audioTracks.size());
+
+        m_audioTracks[audioIndex].Release();
+        if (!m_audioTracks[audioIndex].IsValid())
+            m_audioTrackCount--;
+    }
+
+    void ResourceSystem::M_AudioAddRef(const ResourceIndex audioIndex)
+    {
+        vgassert(audioIndex < m_audioTracks.size());
+
+        m_audioTracks[audioIndex].AddRef();
+    }
+
+    ResourceSystem::ResourceIndex ResourceSystem::M_AudioAddRef(const std::filesystem::path& audioPath)
+    {
+        if(const auto audioIt = m_path2ResourceID.find(audioPath); audioIt != m_path2ResourceID.end())
+        {
+            vgassert(audioIt->second.m_resourceType == ResourceType_audioTrack);
+
+            const ResourceIndex audioIndex = audioIt->second.m_resourceIndex;
+            m_audioTracks[audioIndex].AddRef();
+            return audioIndex;
+        }
+
+        ResourceIndex audioIndex;
+        if (m_audioTrackCount == m_audioTracks.size())
+        {
+            audioIndex = m_audioTracks.size();
+            m_audioTracks.resize(m_audioTracks.size() + 1);
+        }
+        else
+        {
+            for (audioIndex = 0; audioIndex < m_audioTracks.size(); audioIndex++)
+            {
+                if (!m_audioTracks[audioIndex].IsValid())
+                    break;
+            }
+        }
+        m_audioTracks[audioIndex].Load(audioPath, audioIndex);
+        if (!m_audioTracks[audioIndex].IsValid())
+            return c_invalidResourceIndex;
+        m_path2ResourceID[audioPath] = ResourceID(audioIndex, ResourceType_audioTrack);
+        m_audioTrackCount++;
+        return audioIndex;
+    }
+
     ResourceSystem::ResourceID ResourceSystem::M_GetResourceID(const std::filesystem::path& filePath) const
     {
         const auto& resourceIDIt = m_path2ResourceID.find(filePath);
@@ -293,5 +363,12 @@ namespace OGLGAME
         vgassert(m_shaders.size() > shaderIndex);
 
         return m_shaders[shaderIndex];
+    }
+
+    const Audio& ResourceSystem::M_GetAudio(const ResourceIndex audioIndex) const
+    {
+        vgassert(m_audioTracks.size() > audioIndex);
+
+        return m_audioTracks[audioIndex];
     }
 }

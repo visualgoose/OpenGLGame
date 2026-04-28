@@ -70,6 +70,7 @@ namespace OGLGAME
 
         SDL_DestroySurface(texData);
 
+        m_refCount = 1;
         m_valid = true;
     }
 

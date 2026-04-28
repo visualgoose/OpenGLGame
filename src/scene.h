@@ -17,8 +17,8 @@ namespace OGLGAME
 
     public: //static functions
         static GameObject* AllocGameObject();
-        static void RemoveGameObject(GameObject* pGameObject, bool removeChildren);
-        static void RemoveGameObject(size_t id, bool removeChildren);
+        static void RemoveGameObject(GameObject* pGameObject, bool removeChildren = false);
+        static void RemoveGameObject(size_t id, bool removeChildren = false);
 
         static void Tick(double deltaTime);
         static void Frame(double deltaTime);

@@ -5,6 +5,7 @@
 #include "components/model_filter.h"
 #include "components/player.h"
 #include "components/transform.h"
+#include "components/audio_player.h"
 
 namespace OGLGAME
 {
@@ -32,6 +33,7 @@ namespace OGLGAME
     {
         Components::Transform::RegisterType();
         Components::ModelFilter::RegisterType();
+        Components::AudioPlayer::RegisterType();
         Components::Player::RegisterType();
     }
 }

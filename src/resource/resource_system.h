@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "audio.h"
 #include "model.h"
 #include "texture.h"
 #include "material.h"
@@ -21,7 +22,8 @@ namespace OGLGAME
             ResourceType_model,
             ResourceType_texture,
             ResourceType_material,
-            ResourceType_shader
+            ResourceType_shader,
+            ResourceType_audioTrack
         };
         struct ResourceID
         {
@@ -50,21 +52,28 @@ namespace OGLGAME
         static void TextureAddRef(ResourceIndex textureIndex);
         static ResourceIndex TextureAddRef(const std::filesystem::path& texturePath);
 
+        static void AudioRelease(ResourceIndex audioIndex);
+        static void AudioAddRef(ResourceIndex audioIndex);
+        static ResourceIndex AudioAddRef(const std::filesystem::path& audioPath);
+
         static ResourceID GetResourceID(const std::filesystem::path& filePath);
 
         static const Model& GetModel(ResourceIndex modelIndex);
         static const Texture& GetTexture(ResourceIndex textureIndex);
         static const Material& GetMaterial(ResourceIndex materialIndex);
         static const Shader& GetShader(ResourceIndex shaderIndex);
+        static const Audio& GetAudio(ResourceIndex audioIndex);
 
     private: //member variables
         std::unordered_map<std::filesystem::path, ResourceID> m_path2ResourceID;
         size_t m_modelCount = 0;
         std::vector<Model> m_models;
         size_t m_textureCount = 0;
+        size_t m_audioTrackCount = 0;
         std::vector<Texture> m_textures;
         std::vector<Material> m_materials;
         std::vector<Shader> m_shaders;
+        std::vector<Audio> m_audioTracks;
 
     private: //constructors and setup functions
         //is private, because only the Client class should be able to initialize the resource system
@@ -88,12 +97,17 @@ namespace OGLGAME
         void M_TextureAddRef(ResourceIndex textureIndex);
         ResourceIndex M_TextureAddRef(const std::filesystem::path& texturePath);
 
+        void M_AudioRelease(ResourceIndex audioIndex);
+        void M_AudioAddRef(ResourceIndex audioIndex);
+        ResourceIndex M_AudioAddRef(const std::filesystem::path& audioPath);
+
         ResourceID M_GetResourceID(const std::filesystem::path& filePath) const;
 
         const Model& M_GetModel(ResourceIndex modelIndex) const;
         const Texture& M_GetTexture(ResourceIndex textureIndex) const;
         const Material& M_GetMaterial(ResourceIndex materialIndex) const;
         const Shader& M_GetShader(ResourceIndex shaderIndex) const;
+        const Audio& M_GetAudio(ResourceIndex audioIndex) const;
 
     friend class Client;
     };

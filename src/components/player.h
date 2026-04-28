@@ -10,6 +10,9 @@ namespace OGLGAME::Components
 {
     class Player final : public EntityComponent
     {
+    public:
+        float c_pitchLimit = glm::radians(90.0f);
+
     private: //static variables
         static bool s_typeRegistered;
         static TypeHierarchy s_typeHierarchy;
@@ -21,6 +24,10 @@ namespace OGLGAME::Components
     private: //member variables
         Transform* m_pTransform = nullptr;
         glm::vec2 m_movement = glm::vec2(0.0f);
+
+        //both are in radians
+        float m_camYaw = 0.0f;
+        float m_camPitch = 0.0f;
 
     public: //member functions
         void Setup() override;

@@ -9,6 +9,7 @@
 
 #include <filesystem>
 
+#include "components/audio_player.h"
 #include "components/transform.h"
 
 namespace fs = std::filesystem;
@@ -24,7 +25,11 @@ namespace fs = std::filesystem;
 
 #include "gl_debug.h"
 
+#include <Jolt/Jolt.h>
+
 using namespace OGLGAME;
+
+SDL_AudioStream* g_pAudioStream = nullptr;
 
 int main(int argCount, char** ppArgs)
 {
@@ -45,7 +50,7 @@ int main(int argCount, char** ppArgs)
     fs::current_path(engineRootDir);
     g_log.Info("Engine directory: {}", engineRootDir.string());
 
-    if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         g_log.Fatal("SDL3 failed to initialize:")
             .NextLine("{}", SDL_GetError());
         return -1;
@@ -81,18 +86,37 @@ int main(int argCount, char** ppArgs)
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #endif
     {
+        SDL_GL_SetSwapInterval(0);
         Client client(pWindow); //creates Client singleton
+
+        g_pAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr, nullptr, nullptr);
+        if (!g_pAudioStream)
+            g_log.Error("{}", SDL_GetError());
+        if (!SDL_ResumeAudioStreamDevice(g_pAudioStream))
+            g_log.Error("{}", SDL_GetError());
 
         GameObject* pGameObject = Scene::AllocGameObject();
         auto* pModelFilter = pGameObject->AddComponent<Components::ModelFilter>();
         pModelFilter->SetModel("models/test.obj");
         auto* pTransform = pGameObject->AddComponent<Components::Transform>();
+        auto* pAudioPlayer = pGameObject->AddComponent<Components::AudioPlayer>();
+        pAudioPlayer->SetAudio("test.wav");
+
+        const Audio& audio = ResourceSystem::GetAudio(pAudioPlayer->GetAudio());
+        const void* pBytes = audio.GetAudioTrackBytes();
+        if (!SDL_PutAudioStreamData(g_pAudioStream, pBytes, audio.GetByteSize()))
+            g_log.Error("{}", SDL_GetError());
+
+        if (!SDL_ResumeAudioStreamDevice(g_pAudioStream))
+            g_log.Error("{}", SDL_GetError());
 
         pGameObject = Scene::AllocGameObject();
         pModelFilter = pGameObject->AddComponent<Components::ModelFilter>();
         pModelFilter->SetModel("models/test.obj");
         pTransform = pGameObject->AddComponent<Components::Transform>();
         pTransform->m_position.z += 10.0f;
+
+        Scene::RemoveGameObject(pGameObject);
 
         RegisterInputs();
 
@@ -101,10 +125,6 @@ int main(int argCount, char** ppArgs)
         uint64_t start;
         uint64_t end;
         double deltaTime = 1.0;
-
-        SDL_GL_SetSwapInterval(0);
-
-        SDL_Cursor* pCursor = SDL_GetCursor();
 
         while (shouldNotClose)
         {
@@ -142,11 +162,14 @@ int main(int argCount, char** ppArgs)
                 }
             }
 
+            g_log.Info("{}", SDL_GetAudioStreamQueued(g_pAudioStream));
+
             Scene::Frame(deltaTime);
             Renderer::Render();
             SDL_GL_SwapWindow(pWindow);
             end = SDL_GetTicksNS();
             deltaTime = (double)(end - start) / 1000000000.0;
+            //SDL_DelayPrecise(SDL_MS_TO_NS(10));
         }
     }
 

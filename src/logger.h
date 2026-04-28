@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstring>
 #include <utility>
 #include <fmt/base.h>
 #include <fmt/args.h>
@@ -44,7 +45,7 @@ namespace OGLGAME
         void ChangeColor(const char* color);
     public:
         template<typename... T>
-        LogContinue& NextLine(const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& NextLine(const fmt::format_string<T...>& fmt, T&&... args)
         {
             fmt::print("{}{}{}\n" ANSI_COLOR_RESET, m_indent, m_color, fmt::format(fmt, std::forward<T>(args)...));
             return *this;
@@ -79,9 +80,10 @@ namespace OGLGAME
         [[nodiscard]] std::string LF2Indent(const std::string& string) const;
     private:
         template<typename... T>
-        LogContinue& Print(const char* color, const char* prefix, const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& Print(const char* color, const char* prefix, const fmt::format_string<T...>& fmt, T&&... args)
         {
-            fmt::print("{}[{}@{}] {}\n" ANSI_COLOR_RESET, color, prefix, m_modid.c_str(), fmt::format(fmt, std::forward<T>(args)...));
+            fmt::print("{}[{}@{}] {}\n" ANSI_COLOR_RESET, color, prefix, m_modid.c_str(),
+                       fmt::format(fmt, std::forward<T>(args)...));
             m_logContinue.ChangeColor(color);
             m_logContinue.ChangeIndentSize(1 + // "["
                 std::strlen(prefix) + //"{prefix}"
@@ -92,7 +94,7 @@ namespace OGLGAME
         }
     public:
         template<typename... T>
-        LogContinue& PrintType(LogType type, const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& PrintType(const LogType type, const fmt::format_string<T...>& fmt, T&&... args)
         {
             switch (type)
             {
@@ -107,22 +109,22 @@ namespace OGLGAME
             }
         }
         template<typename... T>
-        LogContinue& Info(const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& Info(const fmt::format_string<T...>& fmt, T&&... args)
         {
             return Print(ANSI_COLOR_RESET, "Info", fmt, std::forward<T>(args)...);
         }
         template<typename... T>
-        LogContinue& Warning(const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& Warning(const fmt::format_string<T...>& fmt, T&&... args)
         {
             return Print(ANSI_COLOR_BRIGHT_YELLOW, "Warning", fmt, std::forward<T>(args)...);
         }
         template<typename... T>
-        LogContinue& Error(const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& Error(const fmt::format_string<T...>& fmt, T&&... args)
         {
             return Print(ANSI_COLOR_BRIGHT_RED, "Error", fmt, std::forward<T>(args)...);
         }
         template<typename... T>
-        LogContinue& Fatal(const fmt::v11::format_string<T...>& fmt, T&&... args)
+        LogContinue& Fatal(const fmt::format_string<T...>& fmt, T&&... args)
         {
             return Print(ANSI_COLOR_RED, "FATAL", fmt, std::forward<T>(args)...);
         }

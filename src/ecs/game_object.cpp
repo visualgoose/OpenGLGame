@@ -31,7 +31,7 @@ namespace OGLGAME
         }
         return *this;
     }
-
+ 
     void GameObject::Tick(const double deltaTime)
     {
         for (const auto component : m_components)
@@ -77,7 +77,6 @@ namespace OGLGAME
 
     void GameObject::SetParent(const GameObjectID parentID)
     {
-
         SetParent(Scene::GetGameObject(parentID));
     }
 }

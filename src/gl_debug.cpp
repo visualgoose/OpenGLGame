@@ -2,8 +2,6 @@
 
 #include "logging.h"
 
-#include <SDL3/SDL_video.h>
-
 namespace OGLGAME
 {
     void APIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,

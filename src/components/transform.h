@@ -1,9 +1,13 @@
 ﻿#pragma once
 
-#include "ecs/game_object.h"
+#ifndef OGLGAME_GAME_OBJECT_H
+#error "include header game_object.h instead of transform.h"
+#endif
 
 #include <glm/vec3.hpp>
 #include <glm/ext/quaternion_float.hpp>
+
+#include "type_hierarchy.h"
 
 namespace OGLGAME::Components
 {

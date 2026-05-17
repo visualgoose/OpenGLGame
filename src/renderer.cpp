@@ -45,75 +45,77 @@ namespace OGLGAME
         size_t renderedEntityCount = 0;
         for (size_t i = 0; renderedEntityCount != gameObjectCount; i++)
         {
-            if (pGameObjects[i].m_allocated)
+            if (!pGameObjects[i].m_allocated)
+                continue;
+            renderedEntityCount++;
+            GameObject* pGameObject = &pGameObjects[i].m_gameObject;
+            const auto* pTransform = pGameObject->GetComponent<Components::Transform>();
+            const auto* pModelFilter = pGameObject->GetComponent<Components::ModelFilter>();
+            if (!pTransform || !pModelFilter)
+                continue;
+
+            const ResourceSystem::ResourceIndex modelIndex = pModelFilter->GetModel();
+            if (modelIndex == ResourceSystem::c_invalidResourceIndex)
+                continue;
+
+            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), pTransform->m_position) *
+                glm::mat4_cast(pTransform->m_rotation) * glm::scale(glm::mat4(1.0f), pTransform->m_scale);
+            glm::mat4 MVP = VP * modelMatrix;
+
+            const Model& model = ResourceSystem::GetModel(modelIndex);
+            const std::vector<Model::Mesh> meshes = model.GetMeshes();
+
+            Shader::Feature pShaderFeatures[Shader::Feature_Count];
+            GLint pShaderFeatureUniforms[Shader::Feature_Count];
+            for (const auto& mesh : meshes)
             {
-                renderedEntityCount++;
-                GameObject* pGameObject = &pGameObjects[i].m_gameObject;
-                const auto* pTransform = pGameObject->GetComponent<Components::Transform>();
-                const auto* pModelFilter = pGameObject->GetComponent<Components::ModelFilter>();
-                if (!pTransform || !pModelFilter)
+                if (mesh.m_materialIndex == ResourceSystem::c_invalidResourceIndex)
                     continue;
+                const Material& material = ResourceSystem::GetMaterial(mesh.m_materialIndex);
+                const Shader& shader = ResourceSystem::GetShader(material.GetShaderIndex());
 
-                const ResourceSystem::ResourceIndex modelIndex = pModelFilter->GetModel();
-                if (modelIndex == ResourceSystem::c_invalidResourceIndex)
-                    continue;
+                glBindVertexArray(mesh.m_vao);
+                glUseProgram(shader.GetShaderProgram());
 
-                glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), pTransform->m_position) *
-                    glm::mat4_cast(pTransform->m_rotation) * glm::scale(glm::mat4(1.0f), pTransform->m_scale);
-                glm::mat4 MVP = VP * modelMatrix;
+                const size_t shaderFeatureCount = shader.GetFeatureCount();
+                std::fill_n(pShaderFeatures, Shader::Feature_Count, Shader::Feature_invalid);
+                shader.GetFeatures(pShaderFeatures, Shader::Feature_Count);
+                shader.GetFeatureUniformLocations(pShaderFeatureUniforms, Shader::Feature_Count);
 
-                const Model& model = ResourceSystem::GetModel(modelIndex);
-                const std::vector<Model::Mesh> meshes = model.GetMeshes();
-
-                Shader::Feature pShaderFeatures[Shader::Feature_Count];
-                GLint pShaderFeatureUniforms[Shader::Feature_Count];
-                for (const auto& mesh : meshes)
+                for (size_t shaderFeatureIndex = 0; shaderFeatureIndex < shaderFeatureCount; shaderFeatureIndex++)
                 {
-                    if (mesh.m_materialIndex == ResourceSystem::c_invalidResourceIndex)
-                        continue;
-                    const Material& material = ResourceSystem::GetMaterial(mesh.m_materialIndex);
-                    const Shader& shader = ResourceSystem::GetShader(material.GetShaderIndex());
-
-                    glBindVertexArray(mesh.m_vao);
-                    glUseProgram(shader.GetShaderProgram());
-
-                    const size_t shaderFeatureCount = shader.GetFeatureCount();
-                    std::fill_n(pShaderFeatures, Shader::Feature_Count, Shader::Feature_invalid);
-                    shader.GetFeatures(pShaderFeatures, Shader::Feature_Count);
-                    shader.GetFeatureUniformLocations(pShaderFeatureUniforms, Shader::Feature_Count);
-
-                    for (size_t shaderFeatureIndex = 0; shaderFeatureIndex < shaderFeatureCount; shaderFeatureIndex++)
+                    switch (pShaderFeatures[shaderFeatureIndex])
                     {
-                        switch (pShaderFeatures[shaderFeatureIndex])
-                        {
-                            case Shader::Feature_mvp:
-                                glUniformMatrix4fv(pShaderFeatureUniforms[shaderFeatureIndex], 1, false, glm::value_ptr(MVP));
-                                break;
-                            default:
-                                break;
-                        }
+                        case Shader::Feature_mvp:
+                            glUniformMatrix4fv(pShaderFeatureUniforms[shaderFeatureIndex], 1, false,
+                                glm::value_ptr(MVP));
+                            break;
+                        default:
+                            break;
                     }
-
-                    const std::vector<Shader::Property> shaderProperties = shader.GetProperties();
-                    const std::vector<Material::PropertyValue>& properties = material.GetProperties();
-                    GLint currentTexture = 0;
-                    for (size_t shaderPropertyIndex = 0; shaderPropertyIndex < shaderProperties.size(); shaderPropertyIndex++)
-                    {
-                        const Shader::Property& shaderProperty = shaderProperties[shaderPropertyIndex];
-                        switch (shaderProperty.m_propertyType)
-                        {
-                            case Shader::PropertyType_tex2D:
-                                glUniform1i(shaderProperty.m_uniformLocation, currentTexture);
-                                glActiveTexture(GL_TEXTURE0 + currentTexture);
-                                glBindTexture(GL_TEXTURE_2D, ResourceSystem::GetTexture(properties[shaderPropertyIndex].m_resourceIndex).GetTexture());
-                                currentTexture++;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.m_indexCount), GL_UNSIGNED_INT, nullptr);
                 }
+
+                const std::vector<Shader::Property> shaderProperties = shader.GetProperties();
+                const std::vector<Material::PropertyValue>& properties = material.GetProperties();
+                GLint currentTexture = 0;
+                for (size_t shaderPropertyIndex = 0; shaderPropertyIndex < shaderProperties.size(); shaderPropertyIndex++)
+                {
+                    switch (const Shader::Property& shaderProperty = shaderProperties[shaderPropertyIndex];
+                        shaderProperty.m_propertyType)
+                    {
+                        case Shader::PropertyType_tex2D:
+                            glUniform1i(shaderProperty.m_uniformLocation, currentTexture);
+                            glActiveTexture(GL_TEXTURE0 + currentTexture);
+                            glBindTexture(GL_TEXTURE_2D,
+                                ResourceSystem::GetTexture(properties[shaderPropertyIndex].m_resourceIndex).
+                                GetTexture());
+                            currentTexture++;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.m_indexCount), GL_UNSIGNED_INT, nullptr);
             }
         }
     }

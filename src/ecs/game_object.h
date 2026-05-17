@@ -8,6 +8,7 @@
 #include "entity_component.h"
 
 #include "logging.h"
+#include "components/transform.h"
 
 namespace OGLGAME
 {
@@ -48,13 +49,13 @@ namespace OGLGAME
         T* AddComponent(Args&&... args) requires (std::is_base_of_v<EntityComponent, T> &&
             !std::is_same_v<EntityComponent, T> && std::is_same_v<decltype(T::S_GetTypeHierarchy()), const TypeHierarchy&>)
         {
-            for (const auto component : m_components)
+            for (auto component : m_components)
             {
                 if (component->GetTypeHierarchy().IsTop(T::S_GetTypeHierarchy()))
                 {
                     g_log.Error("Failed to add component to game object, because the base of the component\n"
                         "is the same of another already existing component on the game object");
-                    return nullptr;
+                    return component->GetECType<T>();
                 }
             }
 
@@ -69,6 +70,11 @@ namespace OGLGAME
             !std::is_same_v<EntityComponent, T> && std::is_same_v<decltype(T::S_GetTypeHierarchy()), const TypeHierarchy&>)
         void RemoveComponent()
         {
+            if (T::S_GetTypeHierarchy().IsTop(Components::Transform::S_GetTypeHierarchy()))
+            {
+                g_log.Error("Removing Transform component from GameObject is not possible");
+                return;
+            }
             for (auto componentIt = m_components.begin(); componentIt != m_components.end(); ++componentIt)
             {
                 if ((*componentIt)->GetTypeHierarchy().IsTop(T::S_GetTypeHierarchy()))

@@ -1,4 +1,4 @@
-﻿#include "transform.h"
+﻿#include "ecs/game_object.h"
 
 namespace OGLGAME::Components
 {

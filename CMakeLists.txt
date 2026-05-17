@@ -127,5 +127,23 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(assimp)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
-#steam audio
-target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/extslib/phonon.lib")
+#Vulkan/volk
+set(VK_SDK $ENV{VULKAN_SDK})
+
+FetchContent_Declare(
+        volk
+        GIT_REPOSITORY https://github.com/zeux/volk.git
+        GIT_TAG master
+)
+FetchContent_MakeAvailable(volk)
+target_include_directories(volk PRIVATE "${VK_SDK}/Include")
+target_link_libraries(${PROJECT_NAME} PRIVATE volk::volk)
+
+#VMA
+FetchContent_Declare(
+        vma
+        GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+        GIT_TAG master
+)
+FetchContent_MakeAvailable(vma)
+target_link_libraries(${PROJECT_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator)

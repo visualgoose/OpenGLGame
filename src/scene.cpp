@@ -3,6 +3,7 @@
 #include <vgassert.h>
 
 #include "client.h"
+#include "components/transform.h"
 
 namespace OGLGAME
 {
@@ -116,6 +117,7 @@ namespace OGLGAME
         m_pGameObjects[foundID].m_allocated = true;
         auto* pGameObject = ::new(&m_pGameObjects[foundID].m_gameObject) GameObject();
         pGameObject->m_id = foundID;
+        pGameObject->AddComponent<Components::Transform>();
         m_gameObjectCount++;
         return pGameObject;
     }

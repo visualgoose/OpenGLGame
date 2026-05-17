@@ -89,31 +89,41 @@ int main(int argCount, char** ppArgs)
         SDL_GL_SetSwapInterval(0);
         Client client(pWindow); //creates Client singleton
 
+        /*
+        IPLContextSettings iplSettings
+        {
+            .version = STEAMAUDIO_VERSION,
+            .simdLevel = IPL_SIMDLEVEL_AVX512
+        };
+        IPLContext iplContext;
+        iplContextCreate(&iplSettings, &iplContext);
+
         g_pAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr, nullptr, nullptr);
         if (!g_pAudioStream)
             g_log.Error("{}", SDL_GetError());
         if (!SDL_ResumeAudioStreamDevice(g_pAudioStream))
             g_log.Error("{}", SDL_GetError());
+        */
 
         GameObject* pGameObject = Scene::AllocGameObject();
         auto* pModelFilter = pGameObject->AddComponent<Components::ModelFilter>();
         pModelFilter->SetModel("models/test.obj");
-        auto* pTransform = pGameObject->AddComponent<Components::Transform>();
+        /*
         auto* pAudioPlayer = pGameObject->AddComponent<Components::AudioPlayer>();
-        pAudioPlayer->SetAudio("test.wav");
+        pAudioPlayer->SetAudio("test2.wav");
 
         const Audio& audio = ResourceSystem::GetAudio(pAudioPlayer->GetAudio());
-        const void* pBytes = audio.GetAudioTrackBytes();
-        if (!SDL_PutAudioStreamData(g_pAudioStream, pBytes, audio.GetByteSize()))
+        if (!SDL_PutAudioStreamData(g_pAudioStream, audio.GetAudioTrackBytes(), audio.GetByteSize()))
             g_log.Error("{}", SDL_GetError());
 
         if (!SDL_ResumeAudioStreamDevice(g_pAudioStream))
             g_log.Error("{}", SDL_GetError());
+        */
 
         pGameObject = Scene::AllocGameObject();
         pModelFilter = pGameObject->AddComponent<Components::ModelFilter>();
         pModelFilter->SetModel("models/test.obj");
-        pTransform = pGameObject->AddComponent<Components::Transform>();
+        auto* pTransform = pGameObject->GetComponent<Components::Transform>();
         pTransform->m_position.z += 10.0f;
 
         Scene::RemoveGameObject(pGameObject);
